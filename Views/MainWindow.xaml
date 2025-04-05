@@ -148,7 +148,7 @@
                 Background="Black"
                 Foreground="#FF0000"
                 BorderBrush="#FF0000"
-                Click="Clear_PreviewKeyDown" 
+                Click="ClearButton_Click" 
                 Content="Clear"/>
             <Button x:Name="playButton"
                Style="{StaticResource AppButton}"
@@ -158,7 +158,7 @@
                Background="Green"
                Foreground="White"
                BorderBrush="#FF00FF00"
-               Click="Play_MacroRecording" 
+               Click="PlayButton_Click" 
                Content="Play"/>
         </StackPanel>
 

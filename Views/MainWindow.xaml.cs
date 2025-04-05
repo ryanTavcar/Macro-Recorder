@@ -33,24 +33,6 @@ namespace Names
             this.Close();
         }
 
-        // Add this to enable dragging the window
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-            if (e.ButtonState == MouseButtonState.Pressed)
-                this.DragMove();
-        }
-
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateSizeLabel();
-        }
-
-        private void UpdateSizeLabel()
-        {
-            ViewModel.WriteToConsole($"Window size: {this.Width:0} x {this.Height:0}");
-        }
-
         private void RecordButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartRecordingCommand.Execute(null);
@@ -61,6 +43,9 @@ namespace Names
 
             // Attach keyboard event handler
             this.PreviewKeyDown += Window_PreviewKeyDown;
+
+            // Attach mouse event handler
+            //this.PreviewMouseDown += Window_PreviewMouseDown;
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -73,6 +58,9 @@ namespace Names
 
             // Detach keyboard event handler
             this.PreviewKeyDown -= Window_PreviewKeyDown;
+
+            // Detach mouse event handler
+            //this.PreviewMouseDown -= Window_PreviewMouseDown;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -89,20 +77,42 @@ namespace Names
             UpdateMacroUI();
         }
 
-        private void Clear_PreviewKeyDown(object sender, RoutedEventArgs e)
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearMacroCommand.Execute(null);
             UpdateMacroUI();
-        }        
-        
-        private void Play_MacroRecording(object sender, RoutedEventArgs e)
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.PlayMacroCommand.Execute(null);
+        }
+
+
+        // Add this to enable dragging the window
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (e.ButtonState == MouseButtonState.Pressed)
+                this.DragMove();
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ViewModel.WriteToConsole($"Window size: {this.Width:0} x {this.Height:0}");
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             ViewModel.HandleKeyDown(e);
+
+            // Since the ViewModel adds to its collection, we need to update our UI
+            UpdateMacroUI();
+        }        
+        
+        private void Window_PreviewMouseDown(object sender, MouseEventArgs e)
+        {
+            ViewModel.HandleMouseDown(e);
 
             // Since the ViewModel adds to its collection, we need to update our UI
             UpdateMacroUI();
@@ -148,6 +158,7 @@ namespace Names
                     {
                         command.DelayMs = delay;
                     }
+         
                 };
 
                 // Add both text boxes to the container

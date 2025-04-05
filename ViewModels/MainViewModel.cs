@@ -5,6 +5,9 @@ using System.Windows;
 using System.Windows.Input;
 using Names.Models;
 using Names.Services;
+using WindowsInput;
+using WindowsInput.Native;
+using Names.Helpers;
 
 namespace Names.ViewModels
 {
@@ -49,7 +52,7 @@ namespace Names.ViewModels
 
             // A CanExecute condition to disable the button when there's no macro
             //PlayMacroCommand = new RelayCommand(_ => ExecuteMacro(), _ => MacroCommands.Count > 0);
-            PlayMacroCommand = new RelayCommand(_ => ExecuteMacro());
+            PlayMacroCommand = new RelayCommand(_ => PlayMacro());
 
             // Subscribe to recorder service events
             _recorderService.RecordingStarted += OnRecordingStarted;
@@ -64,6 +67,15 @@ namespace Names.ViewModels
             if (IsRecording)
             {
                 _recorderService.RecordKeyPress(e.Key);
+                e.Handled = true;
+            }
+        }        
+        
+        public void HandleMouseDown(MouseEventArgs e)
+        {
+            if (IsRecording)
+            {
+                _recorderService.RecordMousePress(e.Source);
                 e.Handled = true;
             }
         }
@@ -116,8 +128,8 @@ namespace Names.ViewModels
                 {
                     foreach (var command in sequence.Commands)
                     {
-                        var viewModel = new MacroCommandViewModel(command);
-                        MacroCommands.Add(viewModel);
+                        var commandModel = new MacroCommandViewModel(command);
+                        MacroCommands.Add(commandModel);
                     }
                     WriteToConsole($"Loaded {sequence.Commands.Count} macro commands from {_fileService.LastFilePath}");
                 }
@@ -133,11 +145,12 @@ namespace Names.ViewModels
         private void ClearMacro()
         {
             MacroCommands.Clear();
+            ConsoleText = string.Empty;
             WriteToConsole("Cleared all macro commands");
         }
 
-        // "Play" button that will execute the recorded macro
-        public void ExecuteMacro()
+        // "Play" button that will play the recorded macro
+        public void PlayMacro()
         {
             if (MacroCommands.Count == 0)
             {
@@ -148,21 +161,28 @@ namespace Names.ViewModels
             WriteToConsole("Executing macro...");
 
             // This is where you'd implement the actual execution
-            // For now, we'll just simulate it
-            //foreach (var command in MacroCommands)
-            //{
-            //    // Wait for the specified delay
-            //    Thread.Sleep(command.DelayMs);
+            // Create input simulator instance
+            var simulator = new InputSimulator();
 
-            //    // Convert string key name to actual key
-            //    if (Enum.TryParse<Keys>(command.KeyName, out Keys key))
-            //    {
-            //        // Simulate key press
-            //        SendKeys.SendWait(ConvertToSendKeysFormat(key));
-            //    }
+            foreach (var command in MacroCommands)
+            {
+                // Wait for the specified delay
+                Thread.Sleep(command.DelayMs);
 
-            //    WriteToConsole($"Executed: {command.KeyName}");
-            //}
+                try
+                {
+                    // Convert WPF Key to Virtual Key Code
+                    VirtualKeyCode keyCode = KeyboardUtility.ConvertToVirtualKeyCode(command.KeyName);
+
+                    // Press and release the key
+                    simulator.Keyboard.KeyPress(keyCode);
+                    WriteToConsole($"Executed: {command.KeyName}");
+                }
+                catch (Exception ex)
+                {
+                    WriteToConsole($"Error executing key {command.KeyName}: {ex.Message}");
+                }
+            }
 
             WriteToConsole("Macro execution completed");
         }
