@@ -92,7 +92,12 @@ namespace Names
         private void Clear_PreviewKeyDown(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearMacroCommand.Execute(null);
-            textBoxContainer.Children.Clear();
+            UpdateMacroUI();
+        }        
+        
+        private void Play_MacroRecording(object sender, RoutedEventArgs e)
+        {
+            ViewModel.PlayMacroCommand.Execute(null);
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

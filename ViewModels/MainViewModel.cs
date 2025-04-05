@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
@@ -21,6 +22,7 @@ namespace Names.ViewModels
         public ICommand SaveMacroCommand { get; }
         public ICommand LoadMacroCommand { get; }
         public ICommand ClearMacroCommand { get; }
+        public ICommand PlayMacroCommand { get; }
 
         public string ConsoleText
         {
@@ -44,6 +46,10 @@ namespace Names.ViewModels
             SaveMacroCommand = new RelayCommand(_ => SaveMacro());
             LoadMacroCommand = new RelayCommand(_ => LoadMacro());
             ClearMacroCommand = new RelayCommand(_ => ClearMacro());
+
+            // A CanExecute condition to disable the button when there's no macro
+            //PlayMacroCommand = new RelayCommand(_ => ExecuteMacro(), _ => MacroCommands.Count > 0);
+            PlayMacroCommand = new RelayCommand(_ => ExecuteMacro());
 
             // Subscribe to recorder service events
             _recorderService.RecordingStarted += OnRecordingStarted;
@@ -128,6 +134,37 @@ namespace Names.ViewModels
         {
             MacroCommands.Clear();
             WriteToConsole("Cleared all macro commands");
+        }
+
+        // "Play" button that will execute the recorded macro
+        public void ExecuteMacro()
+        {
+            if (MacroCommands.Count == 0)
+            {
+                WriteToConsole("No macro commands to execute");
+                return;
+            }
+
+            WriteToConsole("Executing macro...");
+
+            // This is where you'd implement the actual execution
+            // For now, we'll just simulate it
+            //foreach (var command in MacroCommands)
+            //{
+            //    // Wait for the specified delay
+            //    Thread.Sleep(command.DelayMs);
+
+            //    // Convert string key name to actual key
+            //    if (Enum.TryParse<Keys>(command.KeyName, out Keys key))
+            //    {
+            //        // Simulate key press
+            //        SendKeys.SendWait(ConvertToSendKeysFormat(key));
+            //    }
+
+            //    WriteToConsole($"Executed: {command.KeyName}");
+            //}
+
+            WriteToConsole("Macro execution completed");
         }
 
         private MacroSequence CreateMacroSequence()
