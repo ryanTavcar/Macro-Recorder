@@ -13,9 +13,6 @@ namespace Names
         {
             InitializeComponent();
             DataContext = new MainViewModel();
-
-            // Set initial size label
-            UpdateSizeLabel();
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -54,7 +51,10 @@ namespace Names
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.SaveMacroCommand.Execute(null);
+            if (!ViewModel.IsRecording)
+            {
+                ViewModel.SaveMacroCommand.Execute(null);
+            }
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
@@ -109,7 +109,7 @@ namespace Names
                 };
 
                 // Set the text manually - we should improve this with proper binding
-                delayTextBox.Text = command.DelayMs.ToString();
+                delayTextBox.Text = $"{command.DelayMs} ms";
 
                 // Handle text changes to update the ViewModel
                 delayTextBox.TextChanged += (s, e) => {
