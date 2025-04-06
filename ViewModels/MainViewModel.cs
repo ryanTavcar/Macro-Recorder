@@ -254,7 +254,8 @@ namespace Names.ViewModels
 
         public void WriteToConsole(string message)
         {
-            ConsoleText += $"{message}\n";
+            // Log to the centralized service instead of directly to a text box
+            LoggerService.Instance.Log(message);
         }
     }
 

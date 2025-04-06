@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using Names.ViewModels;
+using Names.Views;
 
 namespace Names
 {
@@ -9,6 +10,7 @@ namespace Names
     {
         private MainViewModel ViewModel => (MainViewModel)DataContext;
         private bool isRecordingTriggerKey = false;
+        private ConsoleWindow _consoleWindow;
 
         public MainWindow()
         {
@@ -31,6 +33,7 @@ namespace Names
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
+            _consoleWindow.Close();
             this.Close();
         }
 
@@ -118,6 +121,32 @@ namespace Names
         {
             if (ViewModel.LoopCount > 1)
                 ViewModel.LoopCount--;
+        }
+
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            // Hide the main content panel
+            mainContent.Visibility = Visibility.Collapsed;
+
+            // Show and navigate the content frame
+            contentFrame.Visibility = Visibility.Visible;
+            contentFrame.Navigate(new Views.SettingsPage());
+        }
+
+        public void ReturnToMain()
+        {
+            contentFrame.Content = null;
+            contentFrame.Visibility = Visibility.Collapsed;
+            mainContent.Visibility = Visibility.Visible;
+        }
+
+        private void OpenConsoleWindow_Click(object sender, RoutedEventArgs e)
+        {
+            // Create an instance of your new window
+            _consoleWindow = new ConsoleWindow();
+
+            // Show the window
+            _consoleWindow.Show();
         }
 
         // Add this to enable dragging the windown

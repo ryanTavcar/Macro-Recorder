@@ -85,26 +85,38 @@
     </Window.Resources>
 
     <Grid Background="{StaticResource BackgroundBrush}">
-        <!-- Console output -->
-        <TextBox 
-            x:Name="consoleBox"
-            Margin="460,10,10,10"
-            FontSize="14"
-            IsReadOnly="True"
-            Background="#222222"
-            Foreground="#FF0000"
-            BorderBrush="#FF0000"
-            TextWrapping="Wrap"
-            AcceptsReturn="True"
-            VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled"
-            Text="{Binding ConsoleText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <!-- Control buttons -->
-        <StackPanel
-            Orientation="Horizontal"
-            Margin="10,10,233,416">
-            <Button x:Name="recordButton"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Action buttons -->
+            <RowDefinition Height="Auto"/>
+            <!-- Settings and options -->
+            <RowDefinition Height="*"/>
+            <!-- Macro commands (scrollable area) -->
+        </Grid.RowDefinitions>
+
+        <!-- Content frame for pages -->
+        <Frame x:Name="contentFrame" 
+           Grid.RowSpan="3"
+           NavigationUIVisibility="Hidden"
+           Visibility="Collapsed"
+           HorizontalAlignment="Stretch"
+           VerticalAlignment="Stretch"/>
+
+
+        <!-- Main content panel -->
+        <Grid x:Name="mainContent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Action buttons -->
+                <RowDefinition Height="Auto"/>
+                <!-- Settings and options -->
+                <RowDefinition Height="*"/>
+                <!-- Macro commands (scrollable area) -->
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+                <Button x:Name="recordButton"
                 Style="{StaticResource AppButton}"
                 Width="55" 
                 Height="30" 
@@ -169,10 +181,24 @@
                 Foreground="White"
                 Click="StopMacro_Click"
                 Style="{StaticResource AppButton}"/>
-        </StackPanel>
+            <Button x:Name="settingsButton"
+                Content="Settings" 
+                Width="70" 
+                Height="30" 
+                Margin="5,0,0,0"
+                Click="OpenSettings_Click"
+                Style="{StaticResource AppButton}"/>
+                <Button x:Name="consoleButton"
+                Content="Console" 
+                Width="70" 
+                Height="30" 
+                Margin="5,0,0,0"
+                Click="OpenConsoleWindow_Click"
+                Style="{StaticResource AppButton}"/>
+            </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Margin="10,60,254,358">
-
+        <!-- Second row with trigger and loop controls -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10,5">
             <TextBox x:Name="triggerKeyTextBox"
              Width="80"
              Height="30"
@@ -184,7 +210,7 @@
              VerticalContentAlignment="Center"
              HorizontalContentAlignment="Center"/>
 
-            <Button x:Name="recordTriggerButton"
+                <Button x:Name="recordTriggerButton"
             Content="Set Key" 
             Width="60" 
             Height="30" 
@@ -192,8 +218,8 @@
             Click="RecordTrigger_Click"
             Style="{StaticResource AppButton}"/>
 
-            <TextBlock Text="Loops:" VerticalAlignment="Center" Foreground="#FF0000" Margin="10,0,5,0"/>
-            <TextBox x:Name="loopCountTextBox" 
+                <TextBlock Text="Loops:" VerticalAlignment="Center" Foreground="#FF0000" Margin="10,0,5,0"/>
+                <TextBox x:Name="loopCountTextBox" 
              Width="40" 
              Height="30"
              Text="{Binding LoopCount, UpdateSourceTrigger=PropertyChanged}"
@@ -202,27 +228,28 @@
              BorderBrush="#FF0000"
              TextAlignment="Center"
              VerticalContentAlignment="Center"/>
-            <Button x:Name="decrementButton" 
+                <Button x:Name="decrementButton" 
             Content="-" 
             Width="30" 
             Height="30" 
             Margin="2,0,0,0"
             Click="DecrementLoop_Click"
             Style="{StaticResource AppButton}"/>
-            <Button x:Name="incrementButton" 
+                <Button x:Name="incrementButton" 
             Content="+" 
             Width="30" 
             Height="30" 
             Margin="2,0,0,0"
             Click="IncrementLoop_Click"
             Style="{StaticResource AppButton}"/>
-        </StackPanel>
+            </StackPanel>
 
-        <!-- Macro commands container -->
-        <ScrollViewer Margin="10,130,254,10" VerticalScrollBarVisibility="Auto">
+                <!-- Macro commands container -->
+        <ScrollViewer Grid.Row="2" Margin="10" VerticalScrollBarVisibility="Auto">
             <WrapPanel x:Name="textBoxContainer">
                 <!-- TextBoxes will be added here programmatically -->
             </WrapPanel>
         </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>
