@@ -100,6 +100,7 @@ namespace Names
             {
                 isRecordingTriggerKey = true;
                 recordTriggerButton.Content = "Press Key";
+                ViewModel.WaitForTrigger = triggerKeyTextBox.Text != null;
 
                 // Attach global key handler
                 this.PreviewKeyDown += RecordTriggerKey_PreviewKeyDown;
@@ -119,7 +120,7 @@ namespace Names
                 ViewModel.LoopCount--;
         }
 
-        // Add this to enable dragging the window
+        // Add this to enable dragging the windown
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
