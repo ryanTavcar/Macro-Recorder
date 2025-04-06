@@ -8,6 +8,7 @@ namespace Names
     public partial class MainWindow : Window
     {
         private MainViewModel ViewModel => (MainViewModel)DataContext;
+        private bool isRecordingTriggerKey = false;
 
         public MainWindow()
         {
@@ -88,6 +89,35 @@ namespace Names
             ViewModel.PlayMacroCommand.Execute(null);
         }
 
+        private void StopMacro_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.StopMacro();
+        }
+
+        private void RecordTrigger_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isRecordingTriggerKey)
+            {
+                isRecordingTriggerKey = true;
+                recordTriggerButton.Content = "Press Key";
+
+                // Attach global key handler
+                this.PreviewKeyDown += RecordTriggerKey_PreviewKeyDown;
+
+                ViewModel.WriteToConsole("Press any key to set as trigger...");
+            }
+        }
+        
+        private void IncrementLoop_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.LoopCount++;
+        }
+
+        private void DecrementLoop_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.LoopCount > 1)
+                ViewModel.LoopCount--;
+        }
 
         // Add this to enable dragging the window
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -118,6 +148,27 @@ namespace Names
             UpdateMacroUI();
         }
 
+        private void RecordTriggerKey_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (isRecordingTriggerKey)
+            {
+                // Capture the key
+                ViewModel.TriggerKey = e.Key.ToString();
+
+                // Stop recording
+                isRecordingTriggerKey = false;
+                recordTriggerButton.Content = "Set Key";
+
+                // Remove handler
+                this.PreviewKeyDown -= RecordTriggerKey_PreviewKeyDown;
+
+                ViewModel.WriteToConsole($"Trigger key set to: {ViewModel.TriggerKey}");
+
+                // Prevent the key from being processed further
+                e.Handled = true;
+            }
+        }
+
         private void UpdateMacroUI()
         {
             // Clear existing UI
@@ -126,7 +177,7 @@ namespace Names
             // Create UI for each command in the ViewModel
             foreach (var command in ViewModel.MacroCommands)
             {
-                // Create the key text box
+                // Create the key text box 
                 TextBox keyTextBox = new TextBox
                 {
                     Text = command.KeyName,

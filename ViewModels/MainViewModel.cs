@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
@@ -8,6 +9,7 @@ using Names.Services;
 using WindowsInput;
 using WindowsInput.Native;
 using Names.Helpers;
+using Names.MacroStrategies;
 
 namespace Names.ViewModels
 {
@@ -17,6 +19,11 @@ namespace Names.ViewModels
         private readonly FileService _fileService;
         private string _consoleText = string.Empty;
         private bool _isRecording;
+        private int _loopCount = 1;
+        private string _triggerKey = string.Empty;
+        private bool _waitForTrigger = false;
+        private IMacroExecutionStrategy currentExecutionStrategy;
+        private CancellationTokenSource cancellationTokenSource;
 
         public ObservableCollection<MacroCommandViewModel> MacroCommands { get; } = new ObservableCollection<MacroCommandViewModel>();
 
@@ -37,6 +44,24 @@ namespace Names.ViewModels
         {
             get => _isRecording;
             private set => SetProperty(ref _isRecording, value);
+        }
+
+        public int LoopCount
+        {
+            get => _loopCount;
+            set => SetProperty(ref _loopCount, Math.Max(1, value)); // Ensure at least 1 iteration
+        }
+
+        public string TriggerKey
+        {
+            get => _triggerKey;
+            set => SetProperty(ref _triggerKey, value);
+        }
+
+        public bool WaitForTrigger
+        {
+            get => _waitForTrigger;
+            set => SetProperty(ref _waitForTrigger, value);
         }
 
         public MainViewModel()
@@ -158,33 +183,41 @@ namespace Names.ViewModels
                 return;
             }
 
-            WriteToConsole("Executing macro...");
+            // Stop any existing execution
+            StopMacro();
 
-            // This is where you'd implement the actual execution
-            // Create input simulator instance
+            // Create a new cancellation token source
+            cancellationTokenSource = new CancellationTokenSource();
+
+            // Create input simulator
             var simulator = new InputSimulator();
 
-            foreach (var command in MacroCommands)
+            // Create the appropriate execution strategy
+            currentExecutionStrategy = MacroExecutionStrategyFactory.Create(
+                WaitForTrigger,
+                TriggerKey,
+                simulator,
+                WriteToConsole);
+
+            // Execute the macro
+            currentExecutionStrategy.Execute(MacroCommands, LoopCount, cancellationTokenSource.Token);
+        }
+
+        public void StopMacro()
+        {
+            if (currentExecutionStrategy != null)
             {
-                // Wait for the specified delay
-                Thread.Sleep(command.DelayMs);
-
-                try
-                {
-                    // Convert WPF Key to Virtual Key Code
-                    VirtualKeyCode keyCode = KeyboardUtility.ConvertToVirtualKeyCode(command.KeyName);
-
-                    // Press and release the key
-                    simulator.Keyboard.KeyPress(keyCode);
-                    WriteToConsole($"Executed: {command.KeyName}");
-                }
-                catch (Exception ex)
-                {
-                    WriteToConsole($"Error executing key {command.KeyName}: {ex.Message}");
-                }
+                WriteToConsole("Stopping macro execution...");
+                currentExecutionStrategy.Stop();
+                currentExecutionStrategy = null;
             }
 
-            WriteToConsole("Macro execution completed");
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+            }
         }
 
         private MacroSequence CreateMacroSequence()
