@@ -67,5 +67,16 @@ namespace Names.Services
 
             return false;
         }
+
+        // Change return type to SettingsConfig when I've written it.
+        public void LoadSettings()
+        { 
+        }
+
+        public bool SaveSettings()
+        {
+            return true;
+        }
+
     }
 }

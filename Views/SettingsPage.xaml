@@ -231,7 +231,6 @@
                                     VerticalContentAlignment="Center" 
                                     Padding="8,0" 
                                     IsReadOnly="True"
-                                    GotFocus="RecordingHotkeyTextBox_GotFocus"
                                     Text="Click to set hotkey"/>
                             </Border>
                             <Button x:Name="RecordHotkeyButton"

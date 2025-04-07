@@ -16,6 +16,7 @@ namespace Names
         {
             InitializeComponent();
             DataContext = new MainViewModel();
+            _consoleWindow = new ConsoleWindow();
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -84,6 +85,7 @@ namespace Names
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearMacroCommand.Execute(null);
+            _consoleWindow.ClearConsole();
             UpdateMacroUI();
         }
 
@@ -142,9 +144,6 @@ namespace Names
 
         private void OpenConsoleWindow_Click(object sender, RoutedEventArgs e)
         {
-            // Create an instance of your new window
-            _consoleWindow = new ConsoleWindow();
-
             // Show the window
             _consoleWindow.Show();
         }
