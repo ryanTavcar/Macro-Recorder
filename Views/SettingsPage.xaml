@@ -9,6 +9,183 @@
       d:DesignWidth="682"
       Title="Settings">
 
+    <Page.Resources>
+
+        <!-- Window Background Styles -->
+        <RadialGradientBrush  x:Key="BackgroundBrush" GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
+            <GradientStop Color="#212121" Offset="0.0"/>
+            <GradientStop Color="#181818" Offset="0.7"/>
+            <GradientStop Color="#121212" Offset="1.0"/>
+        </RadialGradientBrush>
+
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                            <Grid>
+                                <Border x:Name="highlight" 
+                                CornerRadius="4"
+                                Background="#00FFFFFF" 
+                                Opacity="0"/>
+                                <ContentPresenter x:Name="contentPresenter"
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- MouseOver state with subtle glow effect -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="highlight" Property="Opacity" Value="0.2"/>
+                                <Setter TargetName="highlight" Property="Background" Value="#FFFFFF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="10" Opacity="0.3" Color="#AAAAAA"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <!-- Pressed state -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#222222"/>
+                                <Setter TargetName="contentPresenter" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <!-- Disabled state -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#555555"/>
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Action Button Styles (based on ModernButton) -->
+        <Style x:Key="RecordButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#E53935"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#C62828"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StopButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#424242"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#212121"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PlayButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#43A047"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#2E7D32"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DarkButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#212121"/>
+            <Setter Property="Foreground" Value="#FF5252"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#1A1A1A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="UtilityButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#3F51B5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#303F9F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SmallActionButtonStyle" BasedOn="{StaticResource ModernButton}" TargetType="Button">
+            <Setter Property="Background" Value="#607D8B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#455A64"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern TextBox Style -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="Padding" Value="8,5,8,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                  Focusable="False" 
+                                  HorizontalScrollBarVisibility="Hidden" 
+                                  VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF5252"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF5252"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="5" Opacity="0.3" Color="#FF5252"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Page.Resources>
+
+
     <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -30,11 +207,197 @@
         </StackPanel>
 
         <!-- Settings content -->
+        <!-- Settings content -->
         <ScrollViewer Grid.Row="1" Margin="20,0,20,20">
-            <StackPanel>
-                <!-- Your settings content here -->
-                <TextBlock Text="This is settings content" Foreground="White" />
-                <!-- Add more controls here -->
+            <StackPanel Margin="0,10,0,20">
+                <!-- Recording Settings Section -->
+                <Border Background="#22FFFFFF" CornerRadius="8" Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Recording Settings" Foreground="#FF5252" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Recording Hotkey:" VerticalAlignment="Center" Foreground="White"/>
+                            <Border Grid.Column="1" Background="#1E1E1E" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                                <TextBox x:Name="RecordingHotkeyTextBox" 
+                                    Height="30" 
+                                    Background="Transparent" 
+                                    BorderThickness="0" 
+                                    Foreground="White" 
+                                    VerticalContentAlignment="Center" 
+                                    Padding="8,0" 
+                                    IsReadOnly="True"
+                                    GotFocus="RecordingHotkeyTextBox_GotFocus"
+                                    Text="Click to set hotkey"/>
+                            </Border>
+                            <Button x:Name="RecordHotkeyButton"
+                                Grid.Column="2"
+                                Content="Record" 
+                                Width="80" 
+                                Height="30" 
+                                Margin="5,0,0,0"
+                                Click="RecordHotkeyButton_Click"
+                                Background="#E53935"
+                                Foreground="White"/>
+                        </Grid>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Mouse Recording Mode:" VerticalAlignment="Center" Foreground="White"/>
+                            <ComboBox Grid.Column="1" Height="30">
+                                <ComboBoxItem Content="Movements and Clicks" IsSelected="True"/>
+                                <ComboBoxItem Content="Clicks Only"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Mouse Movement Precision:" VerticalAlignment="Center" Foreground="White"/>
+                            <Slider Grid.Column="1" Minimum="1" Maximum="10" Value="5" TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Margin="0,5"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Playback Settings Section -->
+                <Border Background="#22FFFFFF" CornerRadius="8" Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Playback Settings" Foreground="#FF5252" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Playback Speed:" VerticalAlignment="Center" Foreground="White"/>
+                            <ComboBox Grid.Column="1" Height="30">
+                                <ComboBoxItem Content="0.5x (Slow)" />
+                                <ComboBoxItem Content="1.0x (Normal)" IsSelected="True"/>
+                                <ComboBoxItem Content="2.0x (Fast)" />
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Delay Between Loops (ms):" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBox Grid.Column="1" Text="1000" Height="30" VerticalContentAlignment="Center" Padding="8,0"/>
+                        </Grid>
+
+                        <CheckBox x:Name="RandomizeTimingCheckBox" Content="Randomize timing (helps avoid detection)" Foreground="White" Margin="0,8,0,8"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Playback Hotkey:" VerticalAlignment="Center" Foreground="White"/>
+                            <Border Grid.Column="1" Background="#1E1E1E" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                                <TextBox x:Name="playbackHotkeyTextBox" Height="30" Background="Transparent" BorderThickness="0" Foreground="White" VerticalContentAlignment="Center" Padding="8,0"/>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- UI Settings Section -->
+                <Border Background="#22FFFFFF" CornerRadius="8" Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="UI Settings" Foreground="#FF5252" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Theme:" VerticalAlignment="Center" Foreground="White"/>
+                            <ComboBox Grid.Column="1" Height="30">
+                                <ComboBoxItem Content="Dark" IsSelected="True"/>
+                                <ComboBoxItem Content="Light"/>
+                                <ComboBoxItem Content="System Default"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <CheckBox Content="Show console window" Foreground="White" Margin="0,8,0,8"/>
+                        <CheckBox Content="Start with Windows" Foreground="White" Margin="0,0,0,8"/>
+                        <CheckBox x:Name="ShowTooltips" Content="Show tooltips" Click="ShowTooltipsCheckBox_Click" Foreground="White" Margin="0,0,0,8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- File Management Section -->
+                <Border Background="#22FFFFFF" CornerRadius="8" Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="File Management" Foreground="#FF5252" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Default Save Location:" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBox Grid.Column="1" Height="30" VerticalContentAlignment="Center" Padding="8,0"/>
+                            <Button Grid.Column="2" Content="Browse" Width="80" Height="30" Margin="5,0,0,0"/>
+                        </Grid>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="File Format:" VerticalAlignment="Center" Foreground="White"/>
+                            <ComboBox Grid.Column="1" Height="30">
+                                <ComboBoxItem Content="JSON" IsSelected="True"/>
+                                <ComboBoxItem Content="XML"/>
+                                <ComboBoxItem Content="Binary"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Macro Editing Section -->
+                <Border Background="#22FFFFFF" CornerRadius="8" Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <TextBlock Text="Macro Editing" Foreground="#FF5252" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <CheckBox Content="Allow editing of recorded macros" Foreground="White" Margin="0,8,0,8"/>
+
+                        <Grid Margin="0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Default Delay Between Steps (ms):" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBox Grid.Column="1" Text="50" Height="30" VerticalContentAlignment="Center" Padding="8,0"/>
+                        </Grid>
+
+                        <Grid Margin="0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Mouse Position Mode:" VerticalAlignment="Center" Foreground="White"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <RadioButton Content="Relative to Screen" Foreground="White" IsChecked="True" Margin="0,0,15,0"/>
+                                <RadioButton Content="Relative to Window" Foreground="White"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Save Settings Button -->
+                <Button Content="Save Settings" Height="40" Margin="0,20,0,0" Background="#43A047" Foreground="White" 
+                HorizontalAlignment="Center" Width="200" Style="{StaticResource ModernButton}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

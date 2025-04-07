@@ -1,14 +1,9 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using Names.Models;
 using Names.Services;
 using WindowsInput;
-using WindowsInput.Native;
-using Names.Helpers;
 using Names.MacroStrategies;
 
 namespace Names.ViewModels

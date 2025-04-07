@@ -73,9 +73,5 @@ namespace Names.Views
             consoleBox.Text = logBuilder.ToString();
             consoleBox.ScrollToEnd();
         }
-
-        private void ClearConsole()
-        { 
-        }
     }
 }

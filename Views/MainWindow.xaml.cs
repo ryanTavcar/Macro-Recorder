@@ -199,6 +199,16 @@ namespace Names
             }
         }
 
+        private void On_WindowInBackground(object sender, EventArgs e)
+        {
+            ViewModel.WriteToConsole($"Window in: Background");
+        }
+
+        private void On_WindowInForeground(object sender, EventArgs e)
+        {
+            ViewModel.WriteToConsole($"Window in: Foreground");
+        }        
+
         private void UpdateMacroUI()
         {
             // Clear existing UI
