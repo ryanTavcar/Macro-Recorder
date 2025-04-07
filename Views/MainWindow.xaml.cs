@@ -70,10 +70,7 @@ namespace Names
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!ViewModel.IsRecording)
-            {
-                ViewModel.SaveMacroCommand.Execute(null);
-            }
+            ViewModel.SaveMacroCommand.Execute(null);
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
@@ -85,7 +82,6 @@ namespace Names
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearMacroCommand.Execute(null);
-            _consoleWindow.ClearConsole();
             UpdateMacroUI();
         }
 

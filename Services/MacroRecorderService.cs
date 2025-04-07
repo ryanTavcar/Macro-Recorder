@@ -9,12 +9,16 @@ namespace Names.Services
     {
         private MacroSequence currentSequence = new MacroSequence();
         private DateTime lastKeyTime = DateTime.Now;
-
-        public bool IsRecording { get; private set; }
+        private bool _isRecording;
+        public bool IsRecording
+        {
+            get => _isRecording;
+            set => _isRecording = value;
+        }
 
         public event EventHandler<MacroCommand> CommandRecorded;
-        public event EventHandler RecordingStarted;
-        public event EventHandler RecordingStopped;
+        //public event EventHandler RecordingStarted;
+        //public event EventHandler RecordingStopped;
 
         public void StartRecording()
         {
@@ -23,7 +27,6 @@ namespace Names.Services
                 IsRecording = true;
                 currentSequence.Clear();
                 lastKeyTime = DateTime.Now;
-                RecordingStarted?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -32,10 +35,9 @@ namespace Names.Services
             if (IsRecording)
             {
                 IsRecording = false;
-                RecordingStopped?.Invoke(this, EventArgs.Empty);
             }
         }
-
+        
         public void RecordKeyPress(Key key)
         {
             if (IsRecording)

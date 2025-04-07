@@ -13,7 +13,6 @@ namespace Names.ViewModels
         private readonly MacroRecorderService _recorderService;
         private readonly FileService _fileService;
         private string _consoleText = string.Empty;
-        private bool _isRecording;
         private int _loopCount = 1;
         private string _triggerKey = string.Empty;
         private bool _waitForTrigger = false;
@@ -33,12 +32,6 @@ namespace Names.ViewModels
         {
             get => _consoleText;
             set => SetProperty(ref _consoleText, value);
-        }
-
-        public bool IsRecording
-        {
-            get => _isRecording;
-            private set => SetProperty(ref _isRecording, value);
         }
 
         public int LoopCount
@@ -64,9 +57,9 @@ namespace Names.ViewModels
             _recorderService = new MacroRecorderService();
             _fileService = new FileService();
 
-            StartRecordingCommand = new RelayCommand(_ => StartRecording(), _ => !IsRecording);
-            StopRecordingCommand = new RelayCommand(_ => StopRecording(), _ => IsRecording);
-            SaveMacroCommand = new RelayCommand(_ => SaveMacro());
+            StartRecordingCommand = new RelayCommand(_ => StartRecording(), _ => !_recorderService.IsRecording);
+            StopRecordingCommand = new RelayCommand(_ => StopRecording(), _ => _recorderService.IsRecording);
+            SaveMacroCommand = new RelayCommand(_ => SaveMacro(), _ => !_recorderService.IsRecording);
             LoadMacroCommand = new RelayCommand(_ => LoadMacro());
             ClearMacroCommand = new RelayCommand(_ => ClearMacro());
 
@@ -75,8 +68,6 @@ namespace Names.ViewModels
             PlayMacroCommand = new RelayCommand(_ => PlayMacro());
 
             // Subscribe to recorder service events
-            _recorderService.RecordingStarted += OnRecordingStarted;
-            _recorderService.RecordingStopped += OnRecordingStopped;
             _recorderService.CommandRecorded += OnCommandRecorded;
 
             WriteToConsole("Macro Recorder initialized");
@@ -84,7 +75,7 @@ namespace Names.ViewModels
 
         public void HandleKeyDown(KeyEventArgs e)
         {
-            if (IsRecording)
+            if (_recorderService.IsRecording)
             {
                 _recorderService.RecordKeyPress(e.Key);
                 e.Handled = true;
@@ -93,7 +84,7 @@ namespace Names.ViewModels
         
         public void HandleMouseDown(MouseEventArgs e)
         {
-            if (IsRecording)
+            if (_recorderService.IsRecording)
             {
                 _recorderService.RecordMousePress(e.Source);
                 e.Handled = true;
@@ -102,12 +93,16 @@ namespace Names.ViewModels
 
         private void StartRecording()
         {
+            _recorderService.IsRecording = true;
             _recorderService.StartRecording();
+            WriteToConsole("Recording started...");
         }
 
         private void StopRecording()
         {
+            _recorderService.IsRecording = false;
             _recorderService.StopRecording();
+            WriteToConsole("Recording stopped");
         }
 
         private void SaveMacro()
@@ -223,18 +218,6 @@ namespace Names.ViewModels
                 sequence.AddCommand(new MacroCommand(cmdVM.KeyName, cmdVM.DelayMs));
             }
             return sequence;
-        }
-
-        private void OnRecordingStarted(object sender, EventArgs e)
-        {
-            IsRecording = true;
-            WriteToConsole("Recording started...");
-        }
-
-        private void OnRecordingStopped(object sender, EventArgs e)
-        {
-            IsRecording = false;
-            WriteToConsole("Recording stopped");
         }
 
         private void OnCommandRecorded(object sender, MacroCommand e)

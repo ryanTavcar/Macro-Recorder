@@ -21,7 +21,10 @@ namespace Names.ViewModels
 
         public void Execute(object parameter)
         {
-            _execute(parameter);
+            if (CanExecute(parameter))
+            {
+                _execute(parameter);
+            }
         }
 
         public event EventHandler CanExecuteChanged
