@@ -63,25 +63,8 @@ namespace Names.Views
             }
             e.Handled = true;
         }
-
-        private void RecordingHotkeyTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            StartRecordingHotkey();
-        }        
         
         private void RecordHotkeyButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isRecordingHotKey)
-            {
-                StopRecordingHotkey();
-            }
-            else
-            {
-                StartRecordingHotkey();
-            }
-        }
-
-        private void StartRecordingHotkey()
         {
             if (_isRecordingHotKey) return;
             _isRecordingHotKey = true;
@@ -90,34 +73,26 @@ namespace Names.Views
             RecordHotkeyButton.Content = "Stop";
 
             // Register the key event handler
-            this.PreviewKeyDown  += HotkeyRecording_PreviewKeyDown;
+            this.PreviewKeyDown += StopRecordingHotKey;
 
             // Log to the centralized service with the state
             LoggerService.Instance.Log("Press any key to set as Hotkey...");
+        }
 
-        }        
-        
-        private void StopRecordingHotkey()
+        private void StopRecordingHotKey(object sender, KeyEventArgs e)
         {
-            if (!_isRecordingHotKey) return;
+            // Capture the key
+            string hotkey = e.Key.ToString();
+            _defaultRecordingHotKey = hotkey;
+            RecordingHotkeyTextBox.Text = _defaultRecordingHotKey;
+
+            // Stop recording
             _isRecordingHotKey = false;
             RecordingHotkeyTextBox.Background = new SolidColorBrush(Color.FromRgb(30, 30, 30));
             RecordHotkeyButton.Content = "Record";
 
             // Remove handler
-            this.PreviewKeyDown -= HotkeyRecording_PreviewKeyDown;
-        }
-
-        private void HotkeyRecording_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            // Capture the key
-           string hotkey = e.Key.ToString();
-
-            // Stop recording
-            StopRecordingHotkey();
-
-            _defaultRecordingHotKey = hotkey;
-            RecordingHotkeyTextBox.Text = _defaultRecordingHotKey;
+            this.PreviewKeyDown -= StopRecordingHotKey;
 
             LoggerService.Instance.Log($"Trigger key set to: {hotkey}");
 
