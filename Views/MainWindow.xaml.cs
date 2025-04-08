@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 using Names.ViewModels;
 using Names.Views;
 
@@ -202,55 +204,152 @@ namespace Names
         private void On_WindowInForeground(object sender, EventArgs e)
         {
             ViewModel.WriteToConsole($"Window in: Foreground");
-        }        
+        }
 
         private void UpdateMacroUI()
         {
             // Clear existing UI
-            textBoxContainer.Children.Clear();
+            EventsList.Children.Clear();
 
             // Create UI for each command in the ViewModel
-            foreach (var command in ViewModel.MacroCommands)
+            for (int i = 0; i < ViewModel.MacroCommands.Count; i++)
             {
-                // Create the key text box 
-                TextBox keyTextBox = new TextBox
+                var command = ViewModel.MacroCommands[i];
+                int index = i + 1;
+
+                // Create the border container
+                Border itemBorder = new Border
                 {
-                    Text = command.KeyName,
-                    Width = 50,
-                    Height = 30,
-                    Margin = new Thickness(5),
-                    IsReadOnly = true,
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center
+                    Style = (Style)FindResource("EventItemStyle")
                 };
 
-                // Create the delay text box with binding to the ViewModel
-                TextBox delayTextBox = new TextBox
+                // Create the grid layout
+                Grid itemGrid = new Grid();
+
+                // Define columns
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(40) });
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Item number
+                TextBlock numberBlock = new TextBlock
                 {
-                    Width = 50,
-                    Height = 30,
-                    Margin = new Thickness(5),
-                    IsReadOnly = false,
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center
+                    Text = index.ToString("D3"),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#AAAAAA")),
+                    FontFamily = new FontFamily("Consolas"),
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                Grid.SetColumn(numberBlock, 0);
+
+                // Command name/description
+                TextBlock commandBlock = new TextBlock
+                {
+                    Text = FormatCommandText(command.KeyName),
+                    Foreground = Brushes.White,
+                    Margin = new Thickness(10, 0, 0, 0)
+                };
+                Grid.SetColumn(commandBlock, 1);
+
+                // Delay time (formatted as timestamp)
+                TextBlock delayBlock = new TextBlock
+                {
+                    Text = FormatDelayAsTimestamp(command.DelayMs),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#AAAAAA")),
+                    FontSize = 12,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(10, 0, 10, 0)
+                };
+                Grid.SetColumn(delayBlock, 2);
+
+                // Delete button
+                Button deleteButton = new Button
+                {
+                    Style = (Style)FindResource("ModernButton"),
+                    Background = Brushes.Transparent,
+                    Width = 28,
+                    Height = 28,
+                    Padding = new Thickness(6),
+                    ToolTip = "Delete Event"
                 };
 
-                // Set the text manually - we should improve this with proper binding
-                delayTextBox.Text = $"{command.DelayMs} ms";
+                // Create the delete icon
+                Path deletePath = new Path
+                {
+                    Data = (Geometry)FindResource("DeleteIcon"),
+                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5252")),
+                    StrokeThickness = 1.5,
+                    StrokeLineJoin = PenLineJoin.Round,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round
+                };
+                deleteButton.Content = deletePath;
 
-                // Handle text changes to update the ViewModel
-                delayTextBox.TextChanged += (s, e) => {
-                    if (int.TryParse(delayTextBox.Text, out int delay))
-                    {
-                        command.DelayMs = delay;
-                    }
-         
+                // Store the index for use in the event handler
+                int commandIndex = i;
+                deleteButton.Click += (s, e) =>
+                {
+                    ViewModel.MacroCommands.RemoveAt(commandIndex);
+                    UpdateMacroUI(); // Refresh the UI
                 };
 
-                // Add both text boxes to the container
-                textBoxContainer.Children.Add(keyTextBox);
-                textBoxContainer.Children.Add(delayTextBox);
+                Grid.SetColumn(deleteButton, 3);
+
+                // Add all elements to the grid
+                itemGrid.Children.Add(numberBlock);
+                itemGrid.Children.Add(commandBlock);
+                itemGrid.Children.Add(delayBlock);
+                itemGrid.Children.Add(deleteButton);
+
+                // Add the grid to the border
+                itemBorder.Child = itemGrid;
+
+                // Add the complete item to the stack panel
+                EventsList.Children.Add(itemBorder);
             }
+
+            // Update the status bar counts
+            UpdateStatusBar(ViewModel.MacroCommands.Count);
+        }
+
+        // Helper method to format command text more descriptively
+        private string FormatCommandText(string keyName)
+        {
+            if (keyName.StartsWith("Mouse"))
+            {
+                // For mouse commands, extract coordinates if present
+                if (keyName.Contains("(") && keyName.Contains(")"))
+                {
+                    return keyName;
+                }
+                else
+                {
+                    return $"Mouse Click";
+                }
+            }
+            else
+            {
+                // For keyboard commands
+                return $"Key Press ({keyName})";
+            }
+        }
+
+        // Helper method to format delay as a timestamp
+        private string FormatDelayAsTimestamp(int delayMs)
+        {
+            TimeSpan time = TimeSpan.FromMilliseconds(delayMs);
+            return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
+                time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+        }
+
+        // Update the status bar with counts and timing information
+        private void UpdateStatusBar(int commandCount)
+        {
+             eventsCountTextBlock.Text = $"Events: {commandCount}";
+
+            // Calculate total duration
+            int totalDuration = ViewModel.MacroCommands.Sum(cmd => cmd.DelayMs);
+             durationTextBlock.Text = $"Duration: {totalDuration / 1000.0:F3}s";
         }
     }
 }
