@@ -79,6 +79,18 @@ namespace Names.Views
             LoggerService.Instance.Log("Press any key to set as Hotkey...");
         }
 
+        private void SaveSettings_Click(object sender, RoutedEventArgs e)
+        { 
+        }        
+        
+        private void RandomizeTimingCheckBox_Click(object sender, RoutedEventArgs e)
+        { 
+        }        
+        
+        private void DefaultSaveLocation_Click(object sender, RoutedEventArgs e)
+        { 
+        }
+
         private void StopRecordingHotKey(object sender, KeyEventArgs e)
         {
             // Capture the key
