@@ -10,17 +10,25 @@ namespace Names.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
+        // Services
         private readonly MacroRecorderService _recorderService;
         private readonly FileService _fileService;
+
+        // Private backing fields for UI properties
         private string _consoleText = string.Empty;
         private int _loopCount = 1;
         private string _triggerKey = string.Empty;
         private bool _waitForTrigger = false;
+        private bool _randomizeTimingCheckBox;
+
+        // Execution related fields
         private IMacroExecutionStrategy currentExecutionStrategy;
         private CancellationTokenSource cancellationTokenSource;
 
+        // Macro command collection
         public ObservableCollection<MacroCommandViewModel> MacroCommands { get; } = new ObservableCollection<MacroCommandViewModel>();
 
+        // Commands for UI buttons
         public ICommand StartRecordingCommand { get; }
         public ICommand StopRecordingCommand { get; }
         public ICommand SaveMacroCommand { get; }
@@ -28,6 +36,7 @@ namespace Names.ViewModels
         public ICommand ClearMacroCommand { get; }
         public ICommand PlayMacroCommand { get; }
 
+        // Bindable properties for UI
         public string ConsoleText
         {
             get => _consoleText;
@@ -50,6 +59,12 @@ namespace Names.ViewModels
         {
             get => _waitForTrigger;
             set => SetProperty(ref _waitForTrigger, value);
+        }        
+        
+        public bool RandomizeTimingCheckBox
+        {
+            get => _randomizeTimingCheckBox;
+            set => SetProperty(ref _randomizeTimingCheckBox, value);
         }
 
         public MainViewModel()
@@ -62,10 +77,7 @@ namespace Names.ViewModels
             SaveMacroCommand = new RelayCommand(_ => SaveMacro(), _ => !_recorderService.IsRecording);
             LoadMacroCommand = new RelayCommand(_ => LoadMacro());
             ClearMacroCommand = new RelayCommand(_ => ClearMacro());
-
-            // A CanExecute condition to disable the button when there's no macro
-            //PlayMacroCommand = new RelayCommand(_ => ExecuteMacro(), _ => MacroCommands.Count > 0);
-            PlayMacroCommand = new RelayCommand(_ => PlayMacro());
+            PlayMacroCommand = new RelayCommand(_ => PlayMacro(), _ => MacroCommands.Count > 0);
 
             // Subscribe to recorder service events
             _recorderService.CommandRecorded += OnCommandRecorded;
@@ -93,14 +105,12 @@ namespace Names.ViewModels
 
         private void StartRecording()
         {
-            _recorderService.IsRecording = true;
             _recorderService.StartRecording();
             WriteToConsole("Recording started...");
         }
 
         private void StopRecording()
         {
-            _recorderService.IsRecording = false;
             _recorderService.StopRecording();
             WriteToConsole("Recording stopped");
         }

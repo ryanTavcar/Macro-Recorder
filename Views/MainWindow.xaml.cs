@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Names.Models;
+using Names.Services;
 using Names.ViewModels;
 using Names.Views;
 
@@ -19,6 +21,10 @@ namespace Names
             InitializeComponent();
             DataContext = new MainViewModel();
             _consoleWindow = new ConsoleWindow();
+
+            // Setting controls based from SettingsConfiguration
+            RandomizeTimingCheckBox.IsChecked = SettingsManager.Instance.Settings.RandomizeTiming;
+
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -38,6 +44,16 @@ namespace Names
         {
             _consoleWindow.Close();
             this.Close();
+        }
+
+        private void NewMacroButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear the macro sequence
+            ViewModel.ClearMacroCommand.Execute(null);
+            // Clear the events list UI
+            EventsList.Children.Clear();
+            // Reset the status bar
+            UpdateStatusBar(0);
         }
 
         private void RecordButton_Click(object sender, RoutedEventArgs e)
@@ -78,13 +94,13 @@ namespace Names
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.LoadMacroCommand.Execute(null);
-            UpdateMacroUI();
+            UpdateMacroSequenceUI();
         }
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ClearMacroCommand.Execute(null);
-            UpdateMacroUI();
+            UpdateMacroSequenceUI();
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -146,6 +162,11 @@ namespace Names
             _consoleWindow.Show();
         }
 
+        private void RandomizeTimingCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RandomizeTimingCheckBox = RandomizeTimingCheckBox.IsChecked == true;
+        }
+
         // Add this to enable dragging the windown
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -164,7 +185,7 @@ namespace Names
             ViewModel.HandleKeyDown(e);
 
             // Since the ViewModel adds to its collection, we need to update our UI
-            UpdateMacroUI();
+            UpdateMacroSequenceUI();
         }        
         
         private void Window_PreviewMouseDown(object sender, MouseEventArgs e)
@@ -172,7 +193,7 @@ namespace Names
             ViewModel.HandleMouseDown(e);
 
             // Since the ViewModel adds to its collection, we need to update our UI
-            UpdateMacroUI();
+            UpdateMacroSequenceUI();
         }
 
         private void RecordTriggerKey_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -206,7 +227,7 @@ namespace Names
             ViewModel.WriteToConsole($"Window in: Foreground");
         }
 
-        private void UpdateMacroUI()
+        private void UpdateMacroSequenceUI()
         {
             // Clear existing UI
             EventsList.Children.Clear();
@@ -290,7 +311,7 @@ namespace Names
                 deleteButton.Click += (s, e) =>
                 {
                     ViewModel.MacroCommands.RemoveAt(commandIndex);
-                    UpdateMacroUI(); // Refresh the UI
+                    UpdateMacroSequenceUI(); // Refresh the UI
                 };
 
                 Grid.SetColumn(deleteButton, 3);
@@ -337,9 +358,25 @@ namespace Names
         // Helper method to format delay as a timestamp
         private string FormatDelayAsTimestamp(int delayMs)
         {
+            // Create TimeSpan from milliseconds
             TimeSpan time = TimeSpan.FromMilliseconds(delayMs);
-            return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
-                time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+
+            // For very short durations (less than 1 second)
+            if (time.TotalSeconds < 1)
+            {
+                return string.Format("{0} ms", time.Milliseconds);
+            }
+            // For durations less than 1 minute
+            else if (time.TotalMinutes < 1)
+            {
+                return string.Format("{0}.{1:000} sec", time.Seconds, time.Milliseconds);
+            }
+            // For longer durations
+            else
+            {
+                return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
+                    time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+            }
         }
 
         // Update the status bar with counts and timing information

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Names.Models;
 
 namespace Names.Services
@@ -68,15 +69,35 @@ namespace Names.Services
             return false;
         }
 
-        // Change return type to SettingsConfig when I've written it.
-        public void LoadSettings()
-        { 
-        }
-
-        public bool SaveSettings()
+        public string BrowseSaveLocation()
         {
-            return true;
-        }
+            string? initialDirectory = string.IsNullOrEmpty(lastFilePath) ?
+                                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) :
+                                 Path.GetDirectoryName(lastFilePath);
 
+            // Create the directory if it doesn't exist
+            Directory.CreateDirectory(initialDirectory);
+
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Select Default Save Location",
+                InitialDirectory = initialDirectory,
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                try
+                {
+                    return dialog.FileName;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }
