@@ -13,9 +13,7 @@
     BorderThickness="1"
     BorderBrush="#FF333333"
     Icon="C:\Users\Admin\source\repos\Names\Resources\macro-recorder-icon.ico"
-    ResizeMode="CanResizeWithGrip"
-    Deactivated="On_WindowInBackground"
-    Activated="On_WindowInForeground">
+    ResizeMode="CanResizeWithGrip">
 
     <Window.Template>
         <ControlTemplate TargetType="{x:Type Window}">
@@ -275,6 +273,7 @@
 
         <!-- Icon Paths -->
         <PathGeometry x:Key="PlayIcon">M8 5.14v14l11-7-11-7z</PathGeometry>
+        <PathGeometry x:Key="PauseIcon">M6,5 L10,5 L10,19 L6,19 Z M14,5 L18,5 L18,19 L14,19 Z</PathGeometry>
         <PathGeometry x:Key="DeleteIcon">M6 18L18 6M6 6l12 12</PathGeometry>
 
     </Window.Resources>
@@ -443,7 +442,7 @@
                             <Rectangle Width="20" Height="20" Fill="White"/>
                         </Button>
                         <Button x:Name="playButton" Style="{StaticResource CircleButton}" Background="#43A047" Margin="0,0,10,0" ToolTip="Play Macro" Click="PlayButton_Click">
-                            <Path Data="{StaticResource PlayIcon}" Fill="White" Stretch="Uniform" Width="20" Height="20"/>
+                            <Path x:Name="PlayButtonIcon" Data="{StaticResource PlayIcon}" Fill="White" Stretch="Uniform" Width="20" Height="20"/>
                         </Button>
                     </StackPanel>
 
@@ -515,7 +514,7 @@
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0">
                             <Path Data="M16 5v2m0 10v2M5 10a7 7 0 1114 0 7 7 0 01-14 0z" Stroke="#AAAAAA" Width="12" Height="12" Stretch="Uniform" Margin="0,0,5,0"/>
-                            <TextBlock Text="Loops: 1/1" Foreground="#AAAAAA" FontSize="12"/>
+                            <TextBlock x:Name="LoopsTextBlock" Text="Loops: 1/1" Foreground="#AAAAAA" FontSize="12"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -14,6 +15,7 @@ namespace Names
     {
         private MainViewModel ViewModel => (MainViewModel)DataContext;
         private bool isRecordingTriggerKey = false;
+        private bool _isPlayBack = false;
         private ConsoleWindow _consoleWindow;
 
         public MainWindow()
@@ -105,12 +107,26 @@ namespace Names
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.PlayMacroCommand.Execute(null);
-        }
+            if (!_isPlayBack)
+            {
+                // Change to pause button
+                PlayButtonIcon.Data = this.TryFindResource("PauseIcon") as Geometry;
+                playButton.ToolTip = "Pause Macro";
 
-        private void StopMacro_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.StopMacro();
+                // Start playback
+                ViewModel.PlayMacroCommand.Execute(null);
+                _isPlayBack = true;
+            }
+            else
+            {
+                // Change back to play button
+                PlayButtonIcon.Data = this.TryFindResource("PlayIcon") as Geometry;
+                playButton.ToolTip = "Play Macro";
+
+                // Pause playback
+                ViewModel.StopMacro();
+                _isPlayBack = false;
+            }
         }
 
         private void RecordTrigger_Click(object sender, RoutedEventArgs e)
@@ -131,12 +147,16 @@ namespace Names
         private void IncrementLoop_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.LoopCount++;
+            UpdateStatusBar(ViewModel.MacroCommands.Count);
         }
 
         private void DecrementLoop_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel.LoopCount > 1)
+            { 
                 ViewModel.LoopCount--;
+                UpdateStatusBar(ViewModel.MacroCommands.Count);
+            }
         }
 
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
@@ -215,16 +235,6 @@ namespace Names
                 // Prevent the key from being processed further
                 e.Handled = true;
             }
-        }
-
-        private void On_WindowInBackground(object sender, EventArgs e)
-        {
-            ViewModel.WriteToConsole($"Window in: Background");
-        }
-
-        private void On_WindowInForeground(object sender, EventArgs e)
-        {
-            ViewModel.WriteToConsole($"Window in: Foreground");
         }
 
         private void UpdateMacroSequenceUI()
@@ -382,11 +392,12 @@ namespace Names
         // Update the status bar with counts and timing information
         private void UpdateStatusBar(int commandCount)
         {
-             eventsCountTextBlock.Text = $"Events: {commandCount}";
+            eventsCountTextBlock.Text = $"Events: {commandCount}";
 
             // Calculate total duration
             int totalDuration = ViewModel.MacroCommands.Sum(cmd => cmd.DelayMs);
-             durationTextBlock.Text = $"Duration: {totalDuration / 1000.0:F3}s";
+            durationTextBlock.Text = $"Duration: {totalDuration / 1000.0:F3}s";
+            LoopsTextBlock.Text = $"Loops: {ViewModel.LoopCount}/{ViewModel.LoopCount}";
         }
     }
 }
