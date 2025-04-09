@@ -19,6 +19,7 @@ namespace Names.ViewModels
         private int _loopCount = 1;
         private string _triggerKey = string.Empty;
         private bool _waitForTrigger = false;
+        private bool _randomizeTimingCheckBox;
 
         // Execution related fields
         private IMacroExecutionStrategy currentExecutionStrategy;
@@ -58,6 +59,12 @@ namespace Names.ViewModels
         {
             get => _waitForTrigger;
             set => SetProperty(ref _waitForTrigger, value);
+        }        
+        
+        public bool RandomizeTimingCheckBox
+        {
+            get => _randomizeTimingCheckBox;
+            set => SetProperty(ref _randomizeTimingCheckBox, value);
         }
 
         public MainViewModel()

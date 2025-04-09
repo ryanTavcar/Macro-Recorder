@@ -164,7 +164,7 @@ namespace Names
 
         private void RandomizeTimingCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            //var checkbox  = sender as CheckBox;
+            ViewModel.RandomizeTimingCheckBox = RandomizeTimingCheckBox.IsChecked == true;
         }
 
         // Add this to enable dragging the windown

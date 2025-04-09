@@ -1,16 +1,8 @@
 ﻿using Names.Services;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Xml;
-
 namespace Names.Models
 {
     internal class SettingsManager
@@ -65,7 +57,16 @@ namespace Names.Models
                 if (File.Exists(_configFilePath))
                 {
                     string json = File.ReadAllText(_configFilePath);
-                    return JsonConvert.DeserializeObject<SettingsConfguration>(json) ?? new SettingsConfguration();
+
+                    // First try direct deserialization with specific settings
+                    var jsonSettings = new JsonSerializerSettings
+                    {
+                        Culture = System.Globalization.CultureInfo.InvariantCulture,
+                        FloatParseHandling = FloatParseHandling.Double
+                    };
+
+                    var config = JsonConvert.DeserializeObject<SettingsConfguration>(json, jsonSettings);
+                    return config ?? new SettingsConfguration();
                 }
             }
             catch (Exception ex)
@@ -75,24 +76,31 @@ namespace Names.Models
 
             return new SettingsConfguration();
         }
-
         // Save current settings to file
-        public void SaveSettings()
+        public async Task<bool> SaveSettings()
         {
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(_configFilePath));
+            return await Task.Run(() => {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(_configFilePath));
+                    string json = JsonConvert.SerializeObject(_currentSettings, Newtonsoft.Json.Formatting.Indented);
+                    File.WriteAllText(_configFilePath, json);
+                    LoggerService.Instance.Log("Settings saved successfully");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.Instance.Log($"Error saving settings: {ex.Message}");
+                    return false;
+                }
+            });
+        }
 
-                string json = JsonConvert.SerializeObject(_currentSettings, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText(_configFilePath, json);
-
-                LoggerService.Instance.Log("Settings saved successfully");
-            }
-            catch (Exception ex)
-            {
-                
-                LoggerService.Instance.Log($"Error saving settings: {ex.Message}");
-            }
+        // Force reload settings from file because double types are having trouble loading correctly
+        // and force reloading in SettingsPage.xaml.cs seems to fix the issue
+        public void ForceReloadSettings()
+        {
+            _currentSettings = LoadSettings();
         }
 
         // You can add methods to update specific settings

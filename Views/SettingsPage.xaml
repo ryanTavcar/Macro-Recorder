@@ -268,7 +268,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Mouse Recording Mode:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center">
+                            <ComboBox x:Name="MouseRecordingModeComboBox" SelectionChanged="MouseRecordMode_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center" >
                                 <ComboBoxItem Content="Movements and Clicks" IsSelected="True"/>
                                 <ComboBoxItem Content="Clicks Only"/>
                             </ComboBox>
@@ -280,7 +280,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Mouse Movement Precision:" Style="{StaticResource SettingLabelStyle}"/>
-                            <Slider Grid.Column="1" Minimum="1" Maximum="10" Value="5" TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Margin="0,8"/>
+                            <Slider x:Name="MousePrecisionSlider" ValueChanged="MouseRecordPrecision_Slide" Grid.Column="1" Minimum="1" Maximum="10" Value="5" TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Margin="0,8" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -296,10 +296,10 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Playback Speed:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="0.5x (Slow)" />
-                                <ComboBoxItem Content="1.0x (Normal)" IsSelected="True"/>
-                                <ComboBoxItem Content="2.0x (Fast)" />
+                            <ComboBox x:Name="PlaybackSpeedComboBox" SelectionChanged="PlaybackSpeed_select"  Grid.Column="1" Height="36" VerticalContentAlignment="Center">
+                                <ComboBoxItem Content="0.5x (Slow)" Tag="0.5" />
+                                <ComboBoxItem Content="1.0x (Normal)" IsSelected="True" Tag="1.0"/>
+                                <ComboBoxItem Content="2.0x (Fast)" Tag="2.0" />
                             </ComboBox>
                         </Grid>
 
@@ -309,10 +309,10 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Delay Between Loops (ms):" Style="{StaticResource SettingLabelStyle}"/>
-                            <TextBox Grid.Column="1" Text="1000" Height="36" Style="{StaticResource ModernTextBox}" VerticalContentAlignment="Center"/>
+                            <TextBox x:Name="LoopDelayTextBox" TextChanged="DelayBetweenCommands_TextChanged"  Grid.Column="1" Text="1000" Height="36" Style="{StaticResource ModernTextBox}" VerticalContentAlignment="Center"/>
                         </Grid>
 
-                        <CheckBox x:Name="RandomizeTimingCheckBox" Content="Randomize timing (helps avoid detection)" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12" Click="RandomizeTimingCheckBox_Click"/>
+                        <CheckBox x:Name="RandomizeTimingCheckBox" Content="Randomize timing (helps avoid detection)" Click="RandomizeTimingCheckBox_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"/>
 
                         <Grid Margin="0,8">
                             <Grid.ColumnDefinitions>
@@ -333,12 +333,15 @@
                                        IsReadOnly="True"
                                        Text="Click to set hotkey"/>
                             </Border>
-                            <Button Grid.Column="2"
-                                    Content="Record" 
-                                    Width="80" 
-                                    Height="36" 
-                                    Margin="8,0,0,0"
-                                    Style="{StaticResource UtilityButtonStyle}"/>
+                            <Button 
+                                x:Name="RecordPlaybackHotkeyButton"
+                                Content="Record" 
+                                Click="RecordPlaybackHotkey_Click"
+                                Grid.Column="2"
+                                Width="80" 
+                                Height="36" 
+                                Margin="8,0,0,0"
+                                Style="{StaticResource UtilityButtonStyle}"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -354,16 +357,16 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Theme:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center">
+                            <ComboBox x:Name="ThemeComboBox"  SelectionChanged="ChangeTheme_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center">
                                 <ComboBoxItem Content="Dark" IsSelected="True"/>
                                 <ComboBoxItem Content="Light"/>
                                 <ComboBoxItem Content="System Default"/>
                             </ComboBox>
                         </Grid>
 
-                        <CheckBox Content="Show console window" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"/>
-                        <CheckBox Content="Start with Windows" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"/>
-                        <CheckBox x:Name="ShowTooltips" Content="Show tooltips" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12" Click="ShowTooltipsCheckBox_Click"/>
+                        <CheckBox x:Name="ShowConsoleWindowCheckBox" Content="Show console window" Click="ShowConsoleWindow_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"/>
+                        <CheckBox x:Name="StartWithWindowsCheckBox" Content="Start with Windows" Click="StartWithWindows_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"/>
+                        <CheckBox x:Name="ShowTooltipsCheckBox" Content="Show tooltips"  Click="ShowTooltipsCheckBox_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12" />
                     </StackPanel>
                 </Border>
 
@@ -379,8 +382,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Default Save Location:" Style="{StaticResource SettingLabelStyle}"/>
-                            <TextBox Grid.Column="1" Height="36" Style="{StaticResource ModernTextBox}" IsEnabled="False" VerticalContentAlignment="Center"/>
-                            <Button Grid.Column="2" Content="Browse" Width="80" Height="36" Margin="8,0,0,0" Style="{StaticResource UtilityButtonStyle}" Click="DefaultSaveLocation_Click"/>
+                            <TextBox x:Name="DefaultSaveLocationTextBox" Grid.Column="1" Height="36" Style="{StaticResource ModernTextBox}" IsEnabled="False" VerticalContentAlignment="Center"/>
+                            <Button Click="DefaultSaveLocation_Click" Grid.Column="2" Content="Browse" Width="80" Height="36" Margin="8,0,0,0" Style="{StaticResource UtilityButtonStyle}" />
                         </Grid>
 
                         <Grid Margin="0,8">
@@ -389,10 +392,9 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="File Format:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center">
+                            <ComboBox x:Name="FileFormatComboBox" SelectionChanged="FileFormat_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center">
                                 <ComboBoxItem Content="JSON" IsSelected="True"/>
                                 <ComboBoxItem Content="XML"/>
-                                <ComboBoxItem Content="Binary"/>
                             </ComboBox>
                         </Grid>
                     </StackPanel>
@@ -400,14 +402,23 @@
 
                 <!-- Save Settings Button -->
                 <Button Content="Save Settings" 
-                        Height="48" 
-                        Margin="0,30,0,0" 
-                        Background="#43A047" 
-                        Foreground="White" 
-                        HorizontalAlignment="Center" 
-                        Width="240" 
-                        Style="{StaticResource ModernButton}"
-                        Click="SaveSettings_Click"/>
+                    x:Name="SaveSettingsButton"
+                    Height="48" 
+                    Margin="0,25,0,0" 
+                    Background="#43A047" 
+                    Foreground="White" 
+                    HorizontalAlignment="Center" 
+                    Width="240" 
+                    Style="{StaticResource ModernButton}"
+                    Click="SaveSettings_Click"/>
+
+                <!-- Save Confirmation Message -->
+                <TextBlock x:Name="SaveConfirmationMessage"
+                   Text="Settings saved successfully!"
+                   Foreground="#43A047"
+                   HorizontalAlignment="Center"
+                   Margin="0,4,0,0"
+                   Visibility="Collapsed"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
