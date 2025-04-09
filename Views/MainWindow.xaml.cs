@@ -26,7 +26,8 @@ namespace Names
 
             // Setting controls based from SettingsConfiguration
             RandomizeTimingCheckBox.IsChecked = SettingsManager.Instance.Settings.RandomizeTiming;
-
+            TriggerKeyDisplay.Text = SettingsManager.Instance.Settings.PlaybackHotkey;
+            ViewModel.TriggerKey = SettingsManager.Instance.Settings.PlaybackHotkey;
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -96,6 +97,7 @@ namespace Names
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.LoadMacroCommand.Execute(null);
+            PausePlaybackButton_Click();
             UpdateMacroSequenceUI();
         }
 
@@ -105,7 +107,7 @@ namespace Names
             UpdateMacroSequenceUI();
         }
 
-        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        private void PlayPlaybackButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isPlayBack)
             {
@@ -114,28 +116,36 @@ namespace Names
                 playButton.ToolTip = "Pause Macro";
 
                 // Start playback
+                ViewModel.WaitForTrigger = TriggerKeyDisplay.Text != null;
                 ViewModel.PlayMacroCommand.Execute(null);
                 _isPlayBack = true;
             }
             else
             {
-                // Change back to play button
-                PlayButtonIcon.Data = this.TryFindResource("PlayIcon") as Geometry;
-                playButton.ToolTip = "Play Macro";
-
-                // Pause playback
-                ViewModel.StopMacro();
-                _isPlayBack = false;
+                PausePlaybackButton_Click();
             }
+        }
+
+        private void PausePlaybackButton_Click()
+        {
+            // Pause the macro playback
+            // Change back to play button
+            PlayButtonIcon.Data = this.TryFindResource("PlayIcon") as Geometry;
+            playButton.ToolTip = "Play Macro";
+
+            // Pause playback
+            ViewModel.StopMacro();
+            _isPlayBack = false;
         }
 
         private void RecordTrigger_Click(object sender, RoutedEventArgs e)
         {
             if (!isRecordingTriggerKey)
             {
+                PausePlaybackButton_Click();
                 isRecordingTriggerKey = true;
                 recordTriggerButton.Content = "Press Key";
-                ViewModel.WaitForTrigger = triggerKeyTextBox.Text != null;
+                ViewModel.WaitForTrigger = TriggerKeyDisplay.Text != null; 
 
                 // Attach global key handler
                 this.PreviewKeyDown += RecordTriggerKey_PreviewKeyDown;
@@ -221,7 +231,9 @@ namespace Names
             if (isRecordingTriggerKey)
             {
                 // Capture the key
-                ViewModel.TriggerKey = e.Key.ToString();
+                string hotkey = e.Key.ToString();
+                ViewModel.TriggerKey = hotkey;
+                TriggerKeyDisplay.Text = hotkey;
 
                 // Stop recording
                 isRecordingTriggerKey = false;

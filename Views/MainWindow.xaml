@@ -441,7 +441,7 @@
                         <Button x:Name="stopButton" Style="{StaticResource CircleButton}" Background="#424242" Margin="0,0,10,0" ToolTip="Stop Recording" Click="StopButton_Click">
                             <Rectangle Width="20" Height="20" Fill="White"/>
                         </Button>
-                        <Button x:Name="playButton" Style="{StaticResource CircleButton}" Background="#43A047" Margin="0,0,10,0" ToolTip="Play Macro" Click="PlayButton_Click">
+                            <Button x:Name="playButton" Style="{StaticResource CircleButton}" Background="#43A047" Margin="0,0,10,0" ToolTip="Play Macro" Click="PlayPlaybackButton_Click">
                             <Path x:Name="PlayButtonIcon" Data="{StaticResource PlayIcon}" Fill="White" Stretch="Uniform" Width="20" Height="20"/>
                         </Button>
                     </StackPanel>
