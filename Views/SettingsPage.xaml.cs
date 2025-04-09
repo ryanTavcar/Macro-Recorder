@@ -1,4 +1,6 @@
-﻿using Names.Services;
+﻿using Names.Models;
+using Names.Services;
+using Names.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,19 +24,18 @@ namespace Names.Views
     public partial class SettingsPage : Page
     {
 
-        private bool _showTooltips = true;
         private bool _isRecordingHotKey = false;
         private string _defaultRecordingHotKey = "LeftShift";
-        private bool _randomizeTimingCheckBox = false;
 
         public SettingsPage()
         {
             InitializeComponent();
+            DataContext = new SettingsViewModel();
 
             // Altered default settings on initalization
-            ShowTooltips.IsChecked = _showTooltips;
-            RecordingHotkeyTextBox.Text = _defaultRecordingHotKey;
-            RandomizeTimingCheckBox.IsChecked = _randomizeTimingCheckBox;
+            ShowTooltips.IsChecked = SettingsManager.Instance.Settings.ShowTooltips;
+            RecordingHotkeyTextBox.Text = SettingsManager.Instance.Settings.RecordingHotkey;
+            RandomizeTimingCheckBox.IsChecked = SettingsManager.Instance.Settings.RandomizeTiming;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -59,7 +60,7 @@ namespace Names.Views
                 LoggerService.Instance.Log($"Show tooltip {(isChecked ? "enabled" : "disabled")}");
 
                 // You can also use the value to update settings or behavior
-                 _showTooltips = isChecked;
+                SettingsManager.Instance.Settings.ShowTooltips = isChecked;
             }
             e.Handled = true;
         }
@@ -73,6 +74,7 @@ namespace Names.Views
             RecordHotkeyButton.Content = "Stop";
 
             // Register the key event handler
+            // Register the key event handler
             this.PreviewKeyDown += StopRecordingHotKey;
 
             // Log to the centralized service with the state
@@ -80,12 +82,27 @@ namespace Names.Views
         }
 
         private void SaveSettings_Click(object sender, RoutedEventArgs e)
-        { 
-        }        
-        
+        {
+            SettingsManager.Instance.SaveSettings();
+
+        }
+
         private void RandomizeTimingCheckBox_Click(object sender, RoutedEventArgs e)
-        { 
-        }        
+        {
+            // Cast sender to CheckBox
+            CheckBox checkBox = sender as CheckBox;
+
+            if (checkBox != null)
+            {
+                bool isChecked = checkBox.IsChecked ?? false;
+
+                // Log to the centralized service with the state
+                LoggerService.Instance.Log($"Randomized Timing {(isChecked ? "enabled" : "disabled")}");
+
+                SettingsManager.Instance.Settings.RandomizeTiming = isChecked;
+            }
+            e.Handled = true;
+        }    
         
         private void DefaultSaveLocation_Click(object sender, RoutedEventArgs e)
         { 
