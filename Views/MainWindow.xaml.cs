@@ -358,9 +358,25 @@ namespace Names
         // Helper method to format delay as a timestamp
         private string FormatDelayAsTimestamp(int delayMs)
         {
+            // Create TimeSpan from milliseconds
             TimeSpan time = TimeSpan.FromMilliseconds(delayMs);
-            return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
-                time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+
+            // For very short durations (less than 1 second)
+            if (time.TotalSeconds < 1)
+            {
+                return string.Format("{0} ms", time.Milliseconds);
+            }
+            // For durations less than 1 minute
+            else if (time.TotalMinutes < 1)
+            {
+                return string.Format("{0}.{1:000} sec", time.Seconds, time.Milliseconds);
+            }
+            // For longer durations
+            else
+            {
+                return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
+                    time.Hours, time.Minutes, time.Seconds, time.Milliseconds);
+            }
         }
 
         // Update the status bar with counts and timing information

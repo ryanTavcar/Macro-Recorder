@@ -98,14 +98,12 @@ namespace Names.ViewModels
 
         private void StartRecording()
         {
-            _recorderService.IsRecording = true;
             _recorderService.StartRecording();
             WriteToConsole("Recording started...");
         }
 
         private void StopRecording()
         {
-            _recorderService.IsRecording = false;
             _recorderService.StopRecording();
             WriteToConsole("Recording stopped");
         }
