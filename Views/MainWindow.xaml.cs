@@ -97,6 +97,7 @@ namespace Names
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.LoadMacroCommand.Execute(null);
+            MacroSequenceNameTextBlock.Text = ViewModel.MacroSequenceName;
             PausePlaybackButton_Click();
             UpdateMacroSequenceUI();
         }

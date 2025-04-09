@@ -79,7 +79,8 @@ namespace Names.Models
         // Save current settings to file
         public async Task<bool> SaveSettings()
         {
-            return await Task.Run(() => {
+            return await Task.Run(() =>
+            {
                 try
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(_configFilePath));

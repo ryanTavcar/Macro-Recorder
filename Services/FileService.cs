@@ -19,7 +19,9 @@ namespace Names.Services
                 Filter = "Macro files (*.macro)|*.macro|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                 DefaultExt = "macro",
                 InitialDirectory = string.IsNullOrEmpty(lastFilePath) ?
-                                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) :
+                                 Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "MacroRecorder") :
                                  Path.GetDirectoryName(lastFilePath)
             };
 
@@ -48,7 +50,9 @@ namespace Names.Services
                 FileName = string.IsNullOrEmpty(lastFilePath) ? "my_macro.macro" :
                            Path.GetFileName(lastFilePath),
                 InitialDirectory = string.IsNullOrEmpty(lastFilePath) ?
-                                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) :
+                                 Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "MacroRecorder") :
                                  Path.GetDirectoryName(lastFilePath)
             };
 

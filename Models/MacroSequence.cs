@@ -8,6 +8,7 @@ namespace Names.Models
     public class MacroSequence
     {
         public List<MacroCommand> Commands { get; private set; } = new List<MacroCommand>();
+        public string SequenceName { get; set; } = string.Empty;
 
         public void AddCommand(MacroCommand command)
         {
@@ -22,6 +23,7 @@ namespace Names.Models
         public static MacroSequence FromFile(string filePath)
         {
             MacroSequence sequence = new MacroSequence();
+            sequence.SequenceName = Path.GetFileNameWithoutExtension(filePath);
 
             if (File.Exists(filePath))
             {

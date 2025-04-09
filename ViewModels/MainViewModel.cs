@@ -20,6 +20,7 @@ namespace Names.ViewModels
         private string _triggerKey = string.Empty;
         private bool _waitForTrigger = false;
         private bool _randomizeTimingCheckBox;
+        private string _macroSequenceName = string.Empty;
 
         // Execution related fields
         private IMacroExecutionStrategy currentExecutionStrategy;
@@ -65,6 +66,12 @@ namespace Names.ViewModels
         {
             get => _randomizeTimingCheckBox;
             set => SetProperty(ref _randomizeTimingCheckBox, value);
+        }
+
+        public string MacroSequenceName
+        {
+            get => _macroSequenceName;
+            set => SetProperty(ref _macroSequenceName, value);
         }
 
         public MainViewModel()
@@ -155,6 +162,7 @@ namespace Names.ViewModels
                     {
                         var commandModel = new MacroCommandViewModel(command);
                         MacroCommands.Add(commandModel);
+                        MacroSequenceName = sequence.SequenceName;
                     }
                     WriteToConsole($"Loaded {sequence.Commands.Count} macro commands from {_fileService.LastFilePath}");
                 }
