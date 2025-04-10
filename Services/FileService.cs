@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Names.Models;
+using Newtonsoft.Json;
 
 namespace Names.Services
 {
     public class FileService
     {
         private string lastFilePath = string.Empty;
-
         public string LastFilePath => lastFilePath;
 
         public MacroSequence LoadMacro()
@@ -60,6 +61,8 @@ namespace Names.Services
             {
                 try
                 {
+                    sequence.Name = Path.GetFileNameWithoutExtension(saveDialog.FileName);
+                    sequence.FilePath = saveDialog.FileName;
                     sequence.SaveToFile(saveDialog.FileName);
                     lastFilePath = saveDialog.FileName;
                     return true;
@@ -71,6 +74,86 @@ namespace Names.Services
             }
 
             return false;
+        }
+
+        public List<MacroSequence> LoadSavedMacroList()
+        {
+            string metadataFilePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "MacroRecorder",
+                "macro_list.json");
+
+            List<MacroMetadata> macroMetadataList = new List<MacroMetadata>();
+
+            if (File.Exists(metadataFilePath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(metadataFilePath);
+                    macroMetadataList = JsonConvert.DeserializeObject<List<MacroMetadata>>(json);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading macro list: {ex.Message}");
+                    return new List<MacroSequence>();
+                }
+            }
+
+            // Convert metadata to actual MacroSequence objects
+            List<MacroSequence> sequences = new List<MacroSequence>();
+
+            foreach (var metadata in macroMetadataList)
+            {
+                Debug.WriteLine($"DOES FILE EXIST: {File.Exists(metadata.FilePath)}");
+
+                if (File.Exists(metadata.FilePath))
+                {
+                    try
+                    {
+                        MacroSequence sequence = MacroSequence.FromFile(metadata.FilePath);
+
+                        sequences.Add(sequence);
+
+                        Debug.WriteLine($"Loaded macro: {JsonConvert.SerializeObject(sequences)}");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error loading macro {metadata.Name}: {ex.Message}");
+                    }
+                }
+            }
+
+            Debug.WriteLine($"sequences: {JsonConvert.SerializeObject(sequences)}");
+            return sequences;
+        }
+        public void SaveMacroList(List<MacroSequence> sequences)
+        {
+            string directoryPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "MacroRecorder");
+
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            string metadataFilePath = Path.Combine(directoryPath, "macro_list.json");
+
+            // Create metadata objects from sequences
+            List<MacroMetadata> metadataList = sequences.Select(s => new MacroMetadata
+            {
+                Name = s.Name ?? "Untitled",
+                FilePath = s.FilePath,
+                LastModified = DateTime.Now,
+            }).ToList();
+
+            // Save to JSON
+            string json = JsonConvert.SerializeObject(metadataList, Formatting.Indented);
+
+            Debug.WriteLine($"JSON: {json}");
+
+            File.WriteAllText(metadataFilePath, json);
         }
 
         public string BrowseSaveLocation()

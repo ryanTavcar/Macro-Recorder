@@ -5,6 +5,9 @@ using Names.Models;
 using Names.Services;
 using WindowsInput;
 using Names.MacroStrategies;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Names.ViewModels
 {
@@ -28,6 +31,8 @@ namespace Names.ViewModels
 
         // Macro command collection
         public ObservableCollection<MacroCommandViewModel> MacroCommands { get; } = new ObservableCollection<MacroCommandViewModel>();
+        public List<MacroSequence> _recentMacroList;
+        //public MacroSequence CurrentMacroSequence;
 
         // Commands for UI buttons
         public ICommand StartRecordingCommand { get; }
@@ -92,6 +97,12 @@ namespace Names.ViewModels
             WriteToConsole("Macro Recorder initialized");
         }
 
+        public List<MacroSequence> LoadSavedMacroList()
+        {
+            _recentMacroList = _fileService.LoadSavedMacroList();
+            Debug.WriteLine($"MainViewModel LoadSavedMacroList: {JsonConvert.SerializeObject(_recentMacroList)}");
+            return _recentMacroList;
+        }
         public void HandleKeyDown(KeyEventArgs e)
         {
             if (_recorderService.IsRecording)
@@ -134,6 +145,7 @@ namespace Names.ViewModels
                     return;
                 }
 
+                // Save the updated list
                 bool success = _fileService.SaveMacro(sequence);
                 if (success)
                 {
@@ -141,6 +153,21 @@ namespace Names.ViewModels
                     MessageBox.Show($"Macro saved to {_fileService.LastFilePath}", "Save Successful",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
+
+
+                var macros = LoadSavedMacroList();
+
+                // Remove existing entry with same name if exists
+                macros.RemoveAll(m => m.Name.Equals(sequence.Name, StringComparison.OrdinalIgnoreCase));
+
+                // Add the new/updated macro
+                macros.Add(sequence);
+
+                Debug.WriteLine($"macros: {JsonConvert.SerializeObject(macros)}");
+
+                // Save the updated list of macros
+                _fileService.SaveMacroList(macros);
+
             }
             catch (Exception ex)
             {
@@ -162,7 +189,6 @@ namespace Names.ViewModels
                     {
                         var commandModel = new MacroCommandViewModel(command);
                         MacroCommands.Add(commandModel);
-                        MacroSequenceName = sequence.SequenceName;
                     }
                     WriteToConsole($"Loaded {sequence.Commands.Count} macro commands from {_fileService.LastFilePath}");
                 }
@@ -271,7 +297,6 @@ namespace Names.ViewModels
             get => _delayMs;
             set => SetProperty(ref _delayMs, value);
         }
-
         public MacroCommandViewModel(MacroCommand command)
         {
             KeyName = command.KeyName;

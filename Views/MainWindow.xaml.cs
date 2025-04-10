@@ -8,6 +8,7 @@ using Names.Models;
 using Names.Services;
 using Names.ViewModels;
 using Names.Views;
+using Newtonsoft.Json;
 
 namespace Names
 {
@@ -28,6 +29,8 @@ namespace Names
             RandomizeTimingCheckBox.IsChecked = SettingsManager.Instance.Settings.RandomizeTiming;
             TriggerKeyDisplay.Text = SettingsManager.Instance.Settings.PlaybackHotkey;
             ViewModel.TriggerKey = SettingsManager.Instance.Settings.PlaybackHotkey;
+
+            UpdateSavedMacros();
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -47,6 +50,126 @@ namespace Names
         {
             _consoleWindow.Close();
             this.Close();
+        }
+
+        private void UpdateSavedMacros()
+        {
+
+            List<MacroSequence> macros = ViewModel.LoadSavedMacroList();
+
+            SavedMacrosList.Children.Clear();
+
+            // Take only the 10 most recent macros
+            Debug.WriteLine($"Macro: {JsonConvert.SerializeObject(macros)}");
+
+            foreach (var macro in macros.OrderByDescending(m => m.LastModified).Take(10))
+            {
+                AddMacroItemToList(macro.Name, "EditMacroCommand", "DeleteMacroCommand");
+            }
+
+        }
+
+        private void AddMacroItemToList(string macroName, string editCommandName, string deleteCommandName)
+        {
+            // Create outer Border
+            Border macroItemBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF)),
+                CornerRadius = new CornerRadius(4),
+                Margin = new Thickness(0, 0, 0, 5),
+                Padding = new Thickness(10, 8, 10, 8)
+            };
+
+            // Create Grid
+            Grid macroGrid = new Grid();
+
+            // Add Column Definitions
+            ColumnDefinition col1 = new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) };
+            ColumnDefinition col2 = new ColumnDefinition { Width = GridLength.Auto };
+            macroGrid.ColumnDefinitions.Add(col1);
+            macroGrid.ColumnDefinitions.Add(col2);
+
+            // Create and add Text
+            TextBlock macroNameTextBlock = new TextBlock
+            {
+                Text = macroName,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brushes.White
+            };
+            macroGrid.Children.Add(macroNameTextBlock);
+
+            // Create button container
+            StackPanel buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
+            Grid.SetColumn(buttonPanel, 1);
+
+            // Create Edit Button
+            Button editButton = new Button
+            {
+                Width = 28,
+                Height = 28,
+                Background = Brushes.Transparent,
+                Padding = new Thickness(5),
+                ToolTip = "Edit Macro",
+                Style = FindResource("ModernButton") as Style
+            };
+
+            // Create Edit Icon path
+            Path editPath = new Path
+            {
+                Data = this.TryFindResource("EditIcon") as Geometry,
+                Fill = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
+                Stretch = Stretch.Uniform
+            };
+            editButton.Content = editPath;
+
+            // Do something when user clicks the Edit button
+            //if (!string.IsNullOrEmpty(editCommandName))
+            //{
+            //    editButton.Command = FindResource(editCommandName) as ICommand;
+            //    editButton.CommandParameter = macroName;
+            //}
+
+            // Create Delete Button
+            Button deleteButton = new Button
+            {
+                Width = 28,
+                Height = 28,
+                Background = Brushes.Transparent,
+                Padding = new Thickness(5),
+                ToolTip = "Delete Macro",
+                Style = FindResource("ModernButton") as Style
+            };
+
+            // Create Delete Icon path
+            Path deletePath = new Path
+            {
+                Data = this.TryFindResource("DeleteIcon") as Geometry,
+                Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),
+                Stretch = Stretch.Uniform
+            };
+            deleteButton.Content = deletePath;
+
+            // Do something when user clicks the Delete button
+            // Bind Command if provided
+            //if (!string.IsNullOrEmpty(deleteCommandName))
+            //{
+            //    deleteButton.Command = FindResource(deleteCommandName) as ICommand;
+            //    deleteButton.CommandParameter = macroName;
+            //}
+
+            // Add buttons to panel
+            buttonPanel.Children.Add(editButton);
+            buttonPanel.Children.Add(deleteButton);
+
+            // Add all elements to their containers
+            macroGrid.Children.Add(buttonPanel);
+            macroItemBorder.Child = macroGrid;
+
+            // Add to saved macros list
+            SavedMacrosList.Children.Add(macroItemBorder);
         }
 
         private void NewMacroButton_Click(object sender, RoutedEventArgs e)
@@ -92,6 +215,7 @@ namespace Names
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.SaveMacroCommand.Execute(null);
+            UpdateSavedMacros();
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
