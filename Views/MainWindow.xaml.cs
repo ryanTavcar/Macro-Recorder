@@ -64,12 +64,12 @@ namespace Names
 
             foreach (var macro in macros.OrderByDescending(m => m.LastModified).Take(10))
             {
-                AddMacroItemToList(macro.Name, "EditMacroCommand", "DeleteMacroCommand");
+                AddMacroItemToList(macro.Name, macro.FilePath, "EditMacroCommand", "DeleteMacroCommand");
             }
 
         }
 
-        private void AddMacroItemToList(string macroName, string editCommandName, string deleteCommandName)
+        private void AddMacroItemToList(string macroName, string filePath, string editCommandName, string deleteCommandName)
         {
             // Create outer Border
             Border macroItemBorder = new Border
@@ -126,11 +126,16 @@ namespace Names
             editButton.Content = editPath;
 
             // Do something when user clicks the Edit button
-            //if (!string.IsNullOrEmpty(editCommandName))
-            //{
-            //    editButton.Command = FindResource(editCommandName) as ICommand;
-            //    editButton.CommandParameter = macroName;
-            //}
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                editButton.Click +=  (s,e) =>
+                {
+                    ViewModel.EditMacroCommand.Execute(filePath);
+                    MacroSequenceNameTextBlock.Text = ViewModel.MacroSequenceName;
+                    UpdateMacroSequenceUI();
+                    UpdateStatusBar(ViewModel.MacroCommands.Count);
+                };
+            }
 
             // Create Delete Button
             Button deleteButton = new Button
@@ -146,19 +151,23 @@ namespace Names
             // Create Delete Icon path
             Path deletePath = new Path
             {
-                Data = this.TryFindResource("DeleteIcon") as Geometry,
+                Data = this.TryFindResource("TrashIcon") as Geometry,
                 Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),
                 Stretch = Stretch.Uniform
             };
             deleteButton.Content = deletePath;
 
             // Do something when user clicks the Delete button
-            // Bind Command if provided
-            //if (!string.IsNullOrEmpty(deleteCommandName))
-            //{
-            //    deleteButton.Command = FindResource(deleteCommandName) as ICommand;
-            //    deleteButton.CommandParameter = macroName;
-            //}
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                deleteButton.Click += (s, e) =>
+                {
+                    ViewModel.DeleteMacroCommand.Execute(filePath);
+                    MacroSequenceNameTextBlock.Text = ViewModel.MacroSequenceName;
+                    UpdateMacroSequenceUI();
+                    UpdateSavedMacros();
+                };
+            }
 
             // Add buttons to panel
             buttonPanel.Children.Add(editButton);
@@ -176,6 +185,8 @@ namespace Names
         {
             // Clear the macro sequence
             ViewModel.ClearMacroCommand.Execute(null);
+            // Clear the macro name
+            MacroSequenceNameTextBlock.Text = ViewModel.MacroSequenceName;
             // Clear the events list UI
             EventsList.Children.Clear();
             // Reset the status bar
@@ -215,6 +226,7 @@ namespace Names
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.SaveMacroCommand.Execute(null);
+            MacroSequenceNameTextBlock.Text = ViewModel.MacroSequenceName;
             UpdateSavedMacros();
         }
 
@@ -444,7 +456,7 @@ namespace Names
                 // Create the delete icon
                 Path deletePath = new Path
                 {
-                    Data = (Geometry)FindResource("DeleteIcon"),
+                    Data = (Geometry)FindResource("CrossIcon"),
                     Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5252")),
                     StrokeThickness = 1.5,
                     StrokeLineJoin = PenLineJoin.Round,

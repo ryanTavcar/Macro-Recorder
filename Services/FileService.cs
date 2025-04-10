@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Names.Models;
@@ -42,14 +43,13 @@ namespace Names.Services
             return null;
         }
 
-        public bool SaveMacro(MacroSequence sequence)
+        public MacroSequence SaveMacro(MacroSequence sequence, string? fileName)
         {
             SaveFileDialog saveDialog = new SaveFileDialog
             {
                 Filter = "Macro files (*.macro)|*.macro|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                 DefaultExt = "macro",
-                FileName = string.IsNullOrEmpty(lastFilePath) ? "my_macro.macro" :
-                           Path.GetFileName(lastFilePath),
+                FileName = !string.IsNullOrEmpty(fileName) ? fileName : "my_macro.macro",
                 InitialDirectory = string.IsNullOrEmpty(lastFilePath) ?
                                  Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -65,7 +65,7 @@ namespace Names.Services
                     sequence.FilePath = saveDialog.FileName;
                     sequence.SaveToFile(saveDialog.FileName);
                     lastFilePath = saveDialog.FileName;
-                    return true;
+                    return sequence;
                 }
                 catch (Exception)
                 {
@@ -73,7 +73,7 @@ namespace Names.Services
                 }
             }
 
-            return false;
+            return null;
         }
 
         public List<MacroSequence> LoadSavedMacroList()
@@ -154,6 +154,55 @@ namespace Names.Services
             Debug.WriteLine($"JSON: {json}");
 
             File.WriteAllText(metadataFilePath, json);
+        }
+        
+        /// <summary>
+        /// Deletes a file from the specified path
+        /// </summary>
+        /// <param name="filePath">Full path to the file to delete</param>
+        /// <returns>True if file was successfully deleted, false otherwise</returns>
+        public bool DeleteFile(string filePath)
+        {
+            try
+            {
+                // Check if file exists
+                if (!File.Exists(filePath))
+                {
+                    Debug.WriteLine($"File does not exist: {filePath}");
+                    return false;
+                }
+
+                // Get file name for the message
+                string fileName = Path.GetFileName(filePath);
+
+                // Show confirmation dialog
+                MessageBoxResult result = MessageBox.Show(
+                    $"Are you sure you want to delete '{fileName}'?",
+                    "Confirm Delete",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                // If user clicked No, return without deleting
+                if (result == MessageBoxResult.No)
+                {
+                    return false;
+                }
+
+                // Delete the file
+                File.Delete(filePath);
+                Debug.WriteLine($"Successfully deleted file: {filePath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting file {filePath}: {ex.Message}");
+                MessageBox.Show(
+                    $"Error deleting file: {ex.Message}",
+                    "Delete Failed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return false;
+            }
         }
 
         public string BrowseSaveLocation()
