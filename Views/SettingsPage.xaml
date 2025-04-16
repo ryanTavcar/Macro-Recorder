@@ -4,9 +4,11 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Names.Views"
+      xmlns:viewModels="clr-namespace:Names.ViewModels"
       mc:Ignorable="d" 
       d:DesignHeight="700" 
       d:DesignWidth="1080"
+      PreviewKeyDown="Page_PreviewKeyDown"
       Title="Settings">
 
     <Page.Resources>
@@ -217,7 +219,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="BackButton" Style="{StaticResource ModernButton}" Background="Transparent" Margin="15,0" Width="40" Height="40" Click="BackButton_Click">
+                <Button Style="{StaticResource ModernButton}" Background="Transparent" Margin="15,0" Width="40" Height="40" 
+                        Command="{Binding BackCommand}" Click="BackButton_Click">
                     <Path Data="M10 19l-7-7m0 0l7-7m-7 7h18" Stroke="White" StrokeThickness="1.5" StrokeLineJoin="Round" Width="20" Height="20" Stretch="Uniform"/>
                 </Button>
 
@@ -240,26 +243,24 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Recording Hotkey:" Style="{StaticResource SettingLabelStyle}"/>
-                            <Border Grid.Column="1" Background="#1E1E1E" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
-                                <TextBox x:Name="RecordingHotkeyTextBox" 
-                                    Height="36" 
-                                    Background="Transparent" 
-                                    BorderThickness="0" 
-                                    Foreground="White" 
-                                    VerticalContentAlignment="Center" 
-                                    HorizontalContentAlignment="Center"
-                                    Padding="8,0" 
-                                    IsReadOnly="True"
-                                    Text="Click to set hotkey"/>
+                            <Border Grid.Column="1" Background="{Binding RecordingHotkeyBackground}" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                                <TextBox Background="Transparent" 
+                                         BorderThickness="0" 
+                                         Foreground="White" 
+                                         VerticalContentAlignment="Center" 
+                                         HorizontalContentAlignment="Center"
+                                         Padding="8,0" 
+                                         Height="36"
+                                         IsReadOnly="True"
+                                         Text="{Binding RecordingHotkey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=Click to set hotkey}"/>
                             </Border>
-                            <Button x:Name="RecordHotkeyButton"
-                                Grid.Column="2"
-                                Content="Record" 
-                                Width="80" 
-                                Height="36" 
-                                Margin="8,0,0,0"
-                                Click="RecordHotkeyButton_Click"
-                                Style="{StaticResource UtilityButtonStyle}"/>
+                            <Button Grid.Column="2"
+                                    Content="{Binding RecordHotkeyButtonContent, FallbackValue=Record}" 
+                                    Width="80" 
+                                    Height="36" 
+                                    Margin="8,0,0,0"
+                                    Command="{Binding RecordHotkeyCommand}"
+                                    Style="{StaticResource UtilityButtonStyle}"/>
                         </Grid>
 
                         <Grid Margin="0,8">
@@ -268,8 +269,10 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Mouse Recording Mode:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox x:Name="MouseRecordingModeComboBox" SelectionChanged="MouseRecordMode_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center" >
-                                <ComboBoxItem Content="Movements and Clicks" IsSelected="True"/>
+                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center" 
+                                      SelectedValuePath="Content"
+                                      SelectedValue="{Binding MouseRecordingMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=Movements and Clicks}">
+                                <ComboBoxItem Content="Movements and Clicks"/>
                                 <ComboBoxItem Content="Clicks Only"/>
                             </ComboBox>
                         </Grid>
@@ -280,7 +283,8 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Mouse Movement Precision:" Style="{StaticResource SettingLabelStyle}"/>
-                            <Slider x:Name="MousePrecisionSlider" ValueChanged="MouseRecordPrecision_Slide" Grid.Column="1" Minimum="1" Maximum="10" Value="5" TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Margin="0,8" />
+                            <Slider Grid.Column="1" Minimum="1" Maximum="10" TickFrequency="1" TickPlacement="BottomRight" IsSnapToTickEnabled="True" Margin="0,8" 
+                                    Value="{Binding MousePrecision, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -296,9 +300,10 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Playback Speed:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox x:Name="PlaybackSpeedComboBox" SelectionChanged="PlaybackSpeed_select"  Grid.Column="1" Height="36" VerticalContentAlignment="Center">
+                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center"
+                                      SelectedValue="{Binding PlaybackSpeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBoxItem Content="0.5x (Slow)" Tag="0.5" />
-                                <ComboBoxItem Content="1.0x (Normal)" IsSelected="True" Tag="1.0"/>
+                                <ComboBoxItem Content="1.0x (Normal)" Tag="1.0"/>
                                 <ComboBoxItem Content="2.0x (Fast)" Tag="2.0" />
                             </ComboBox>
                         </Grid>
@@ -309,10 +314,12 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Delay Between Loops (ms):" Style="{StaticResource SettingLabelStyle}"/>
-                            <TextBox x:Name="LoopDelayTextBox" TextChanged="DelayBetweenCommands_TextChanged"  Grid.Column="1" Text="1000" Height="36" Style="{StaticResource ModernTextBox}" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Column="1" Height="36" Style="{StaticResource ModernTextBox}" VerticalContentAlignment="Center"
+                                     Text="{Binding LoopDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
 
-                        <CheckBox x:Name="RandomizeTimingCheckBox" Content="Randomize timing (helps avoid detection)" Click="RandomizeTimingCheckBox_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"/>
+                        <CheckBox Content="Randomize timing (helps avoid detection)" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"
+                                  IsChecked="{Binding RandomizeTiming, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <Grid Margin="0,8">
                             <Grid.ColumnDefinitions>
@@ -321,27 +328,24 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Playback Hotkey:" Style="{StaticResource SettingLabelStyle}"/>
-                            <Border Grid.Column="1" Background="#1E1E1E" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
-                                <TextBox x:Name="PlaybackHotkeyTextBox" 
-                                       Height="36" 
-                                       Background="Transparent" 
-                                       BorderThickness="0" 
-                                       Foreground="White" 
-                                       VerticalContentAlignment="Center"
-                                       HorizontalContentAlignment="Center"
-                                       Padding="8,0"
-                                       IsReadOnly="True"
-                                       Text="Click to set hotkey"/>
+                            <Border Grid.Column="1" Background="{Binding PlaybackHotkeyBackground}" CornerRadius="4" BorderThickness="1" BorderBrush="#444444">
+                                <TextBox Background="Transparent" 
+                                         BorderThickness="0" 
+                                         Foreground="White" 
+                                         VerticalContentAlignment="Center"
+                                         HorizontalContentAlignment="Center"
+                                         Padding="8,0"
+                                         Height="36"
+                                         IsReadOnly="True"
+                                         Text="{Binding PlaybackHotkey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </Border>
-                            <Button 
-                                x:Name="RecordPlaybackHotkeyButton"
-                                Content="Record" 
-                                Click="RecordPlaybackHotkey_Click"
-                                Grid.Column="2"
-                                Width="80" 
-                                Height="36" 
-                                Margin="8,0,0,0"
-                                Style="{StaticResource UtilityButtonStyle}"/>
+                            <Button Grid.Column="2"
+                                    Content="{Binding RecordPlaybackHotkeyButtonContent}" 
+                                    Width="80" 
+                                    Height="36" 
+                                    Margin="8,0,0,0"
+                                    Command="{Binding RecordPlaybackHotkeyCommand}"
+                                    Style="{StaticResource UtilityButtonStyle}"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -357,16 +361,21 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Theme:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox x:Name="ThemeComboBox"  SelectionChanged="ChangeTheme_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="Dark" IsSelected="True"/>
+                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center"
+                                      SelectedValuePath="Content"
+                                      SelectedValue="{Binding Theme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem Content="Dark"/>
                                 <ComboBoxItem Content="Light"/>
                                 <ComboBoxItem Content="System Default"/>
                             </ComboBox>
                         </Grid>
 
-                        <CheckBox x:Name="ShowConsoleWindowCheckBox" Content="Show console window" Click="ShowConsoleWindow_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"/>
-                        <CheckBox x:Name="StartWithWindowsCheckBox" Content="Start with Windows" Click="StartWithWindows_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"/>
-                        <CheckBox x:Name="ShowTooltipsCheckBox" Content="Show tooltips"  Click="ShowTooltipsCheckBox_Click" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12" />
+                        <CheckBox Content="Show console window" Style="{StaticResource ModernToggleSwitch}" Margin="0,12,0,12"
+                                  IsChecked="{Binding ShowConsoleWindow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Content="Start with Windows" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"
+                                  IsChecked="{Binding StartWithWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Content="Show tooltips" Style="{StaticResource ModernToggleSwitch}" Margin="0,0,0,12"
+                                  IsChecked="{Binding ShowTooltips, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </Border>
 
@@ -382,8 +391,10 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Default Save Location:" Style="{StaticResource SettingLabelStyle}"/>
-                            <TextBox x:Name="DefaultSaveLocationTextBox" Grid.Column="1" Height="36" Style="{StaticResource ModernTextBox}" IsEnabled="False" VerticalContentAlignment="Center"/>
-                            <Button Click="DefaultSaveLocation_Click" Grid.Column="2" Content="Browse" Width="80" Height="36" Margin="8,0,0,0" Style="{StaticResource UtilityButtonStyle}" />
+                            <TextBox Grid.Column="1" Height="36" Style="{StaticResource ModernTextBox}" IsEnabled="False" VerticalContentAlignment="Center"
+                                     Text="{Binding DefaultSaveLocation, Mode=OneWay}"/>
+                            <Button Grid.Column="2" Content="Browse" Width="80" Height="36" Margin="8,0,0,0" Style="{StaticResource UtilityButtonStyle}" 
+                                    Command="{Binding BrowseSaveLocationCommand}"/>
                         </Grid>
 
                         <Grid Margin="0,8">
@@ -392,8 +403,10 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="File Format:" Style="{StaticResource SettingLabelStyle}"/>
-                            <ComboBox x:Name="FileFormatComboBox" SelectionChanged="FileFormat_Select" Grid.Column="1" Height="36" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="JSON" IsSelected="True"/>
+                            <ComboBox Grid.Column="1" Height="36" VerticalContentAlignment="Center"
+                                      SelectedValuePath="Content"
+                                      SelectedValue="{Binding FileFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem Content="JSON"/>
                                 <ComboBoxItem Content="XML"/>
                             </ComboBox>
                         </Grid>
@@ -401,8 +414,7 @@
                 </Border>
 
                 <!-- Save Settings Button -->
-                <Button Content="Save Settings" 
-                    x:Name="SaveSettingsButton"
+                <Button Content="{Binding SaveButtonContent}" 
                     Height="48" 
                     Margin="0,25,0,0" 
                     Background="#43A047" 
@@ -410,15 +422,15 @@
                     HorizontalAlignment="Center" 
                     Width="240" 
                     Style="{StaticResource ModernButton}"
-                    Click="SaveSettings_Click"/>
+                    IsEnabled="{Binding IsButtonEnabled}"
+                    Command="{Binding SaveSettingsCommand}"/>
 
                 <!-- Save Confirmation Message -->
-                <TextBlock x:Name="SaveConfirmationMessage"
-                   Text="Settings saved successfully!"
+                <TextBlock Text="Settings saved successfully!"
                    Foreground="#43A047"
                    HorizontalAlignment="Center"
                    Margin="0,4,0,0"
-                   Visibility="Collapsed"/>
+                   Visibility="{Binding SaveConfirmationVisibility}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
