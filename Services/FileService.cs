@@ -127,7 +127,7 @@ namespace Names.Services
             Debug.WriteLine($"sequences: {JsonConvert.SerializeObject(sequences)}");
             return sequences;
         }
-        public void SaveMacroList(List<MacroSequence> sequences)
+        public void SaveMacroToList(MacroSequence sequence)
         {
             string directoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -139,23 +139,71 @@ namespace Names.Services
             }
 
             string metadataFilePath = Path.Combine(directoryPath, "macro_list.json");
+            List<MacroMetadata> metadataList = new List<MacroMetadata>();
 
-            // Create metadata objects from sequences
-            List<MacroMetadata> metadataList = sequences.Select(s => new MacroMetadata
+            // Load existing metadata list if it exists
+            if (File.Exists(metadataFilePath))
             {
-                Name = s.Name ?? "Untitled",
-                FilePath = s.FilePath,
-                LastModified = DateTime.Now,
-            }).ToList();
+                try
+                {
+                    string existingJson = File.ReadAllText(metadataFilePath);
+                    metadataList = JsonConvert.DeserializeObject<List<MacroMetadata>>(existingJson) ?? new List<MacroMetadata>();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error reading existing macro list: {ex.Message}");
+                    // Continue with empty list if there's an error
+                }
+            }
+
+            // Create metadata object for the new sequence
+            MacroMetadata newMetadata = new MacroMetadata
+            {
+                Name = sequence.Name ?? "Untitled",
+                FilePath = sequence.FilePath,
+                LastModified = DateTime.Now
+            };
+
+            // Remove existing entry with same name or filepath if exists
+            metadataList.RemoveAll(m => m.Name.Equals(newMetadata.Name, StringComparison.OrdinalIgnoreCase) ||
+                                       m.FilePath.Equals(newMetadata.FilePath, StringComparison.OrdinalIgnoreCase));
+
+            // Add the new metadata
+            metadataList.Add(newMetadata);
 
             // Save to JSON
             string json = JsonConvert.SerializeObject(metadataList, Formatting.Indented);
-
             Debug.WriteLine($"JSON: {json}");
-
             File.WriteAllText(metadataFilePath, json);
         }
-        
+
+        public bool DeleteMacroFromList(string filePath)
+        {
+            string metadataFilePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "MacroRecorder",
+                "macro_list.json");
+            if (File.Exists(metadataFilePath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(metadataFilePath);
+                    List<MacroMetadata> macroMetadataList = JsonConvert.DeserializeObject<List<MacroMetadata>>(json);
+                    // Remove the entry with the specified file path
+                    macroMetadataList.RemoveAll(m => m.FilePath.Equals(filePath, StringComparison.OrdinalIgnoreCase));
+                    // Save the updated list back to the file
+                    string updatedJson = JsonConvert.SerializeObject(macroMetadataList, Formatting.Indented);
+                    File.WriteAllText(metadataFilePath, updatedJson);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deleting macro from list: {ex.Message}");
+                }
+            }
+                return false;
+        }
+
         /// <summary>
         /// Deletes a file from the specified path
         /// </summary>
@@ -169,11 +217,17 @@ namespace Names.Services
                 if (!File.Exists(filePath))
                 {
                     Debug.WriteLine($"File does not exist: {filePath}");
+                    MessageBox.Show(
+                        $"File does not exist",
+                        "Delete Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                     return false;
                 }
 
                 // Get file name for the message
                 string fileName = Path.GetFileName(filePath);
+
 
                 // Show confirmation dialog
                 MessageBoxResult result = MessageBox.Show(
