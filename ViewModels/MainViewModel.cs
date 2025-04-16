@@ -5,6 +5,9 @@ using Names.Models;
 using Names.Services;
 using WindowsInput;
 using Names.MacroStrategies;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Names.ViewModels
 {
@@ -28,6 +31,8 @@ namespace Names.ViewModels
 
         // Macro command collection
         public ObservableCollection<MacroCommandViewModel> MacroCommands { get; } = new ObservableCollection<MacroCommandViewModel>();
+        public List<MacroSequence> _recentMacroList;
+        //public MacroSequence CurrentMacroSequence;
 
         // Commands for UI buttons
         public ICommand StartRecordingCommand { get; }
@@ -36,6 +41,8 @@ namespace Names.ViewModels
         public ICommand LoadMacroCommand { get; }
         public ICommand ClearMacroCommand { get; }
         public ICommand PlayMacroCommand { get; }
+        public ICommand EditMacroCommand { get; }
+        public ICommand DeleteMacroCommand { get; }
 
         // Bindable properties for UI
         public string ConsoleText
@@ -86,10 +93,79 @@ namespace Names.ViewModels
             ClearMacroCommand = new RelayCommand(_ => ClearMacro());
             PlayMacroCommand = new RelayCommand(_ => PlayMacro(), _ => MacroCommands.Count > 0);
 
+            // Update the EditMacroCommand initialization to pass a string argument to the EditMacro method.
+            EditMacroCommand = new RelayCommand(param => EditMacro(param as string), _ => !_recorderService.IsRecording);
+            DeleteMacroCommand = new RelayCommand(param => DeleteMacro(param as string), _ => !_recorderService.IsRecording);
+
             // Subscribe to recorder service events
             _recorderService.CommandRecorded += OnCommandRecorded;
 
             WriteToConsole("Macro Recorder initialized");
+        }
+
+        public List<MacroSequence> LoadSavedMacroList()
+        {
+            _recentMacroList = _fileService.LoadSavedMacroList();
+            Debug.WriteLine($"MainViewModel LoadSavedMacroList: {JsonConvert.SerializeObject(_recentMacroList)}");
+            return _recentMacroList;
+        }
+
+        private void EditMacro(string? filePath)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(filePath))
+                {
+                    ClearMacro();
+                    var sequence = MacroSequence.FromFile(filePath);
+                    if (sequence != null)
+                    {
+                        MacroSequenceName = sequence.Name;
+                        foreach (var command in sequence.Commands)
+                        {
+                            var commandModel = new MacroCommandViewModel(command);
+                            MacroCommands.Add(commandModel);
+                        }
+                        WriteToConsole($"Loaded {sequence.Commands.Count} macro commands from {filePath}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToConsole($"Load Failed: {ex.Message}");
+                MessageBox.Show($"Error loading file: {ex.Message}", "Load Failed",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DeleteMacro(string? filePath)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(filePath))
+                {
+                    var sequence = MacroSequence.FromFile(filePath);
+                    if (sequence != null)
+                    {
+                        if (_fileService.DeleteFile(filePath))
+                        {
+                            // macro is in view/edit, remove it from the view
+                            if (sequence.Name == MacroSequenceName)
+                            {
+                                MacroSequenceName = "Untitled";
+                                ClearMacro();
+                            }
+                            WriteToConsole($"Deleted macro file: {filePath}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteToConsole($"Delete Failed: {ex.Message}");
+                MessageBox.Show($"Error deleting file: {ex.Message}", "Delete Failed",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public void HandleKeyDown(KeyEventArgs e)
@@ -134,13 +210,29 @@ namespace Names.ViewModels
                     return;
                 }
 
-                bool success = _fileService.SaveMacro(sequence);
-                if (success)
+                // Save the updated list
+                MacroSequence savedSequenced = _fileService.SaveMacro(sequence, MacroSequenceName);
+
+                if (savedSequenced != null)
                 {
+                    MacroSequenceName = savedSequenced.Name;
                     WriteToConsole($"Macro saved to {_fileService.LastFilePath}");
                     MessageBox.Show($"Macro saved to {_fileService.LastFilePath}", "Save Successful",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
+
+
+                var macros = LoadSavedMacroList();
+
+                // Remove existing entry with same name if exists
+                macros.RemoveAll(m => m.Name.Equals(sequence.Name, StringComparison.OrdinalIgnoreCase));
+
+                // Add the new/updated macro
+                macros.Add(sequence);
+
+                // Save the updated list of macros
+                _fileService.SaveMacroList(macros);
+
             }
             catch (Exception ex)
             {
@@ -156,13 +248,13 @@ namespace Names.ViewModels
             {
                 ClearMacro();
                 var sequence = _fileService.LoadMacro();
+                MacroSequenceName = sequence.Name;
                 if (sequence != null)
                 {
                     foreach (var command in sequence.Commands)
                     {
                         var commandModel = new MacroCommandViewModel(command);
                         MacroCommands.Add(commandModel);
-                        MacroSequenceName = sequence.SequenceName;
                     }
                     WriteToConsole($"Loaded {sequence.Commands.Count} macro commands from {_fileService.LastFilePath}");
                 }
@@ -170,15 +262,13 @@ namespace Names.ViewModels
             catch (Exception ex)
             {
                 WriteToConsole($"Load Failed: {ex.Message}");
-                MessageBox.Show($"Error loading file: {ex.Message}", "Load Failed",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void ClearMacro()
         {
             MacroCommands.Clear();
-            ConsoleText = string.Empty;
+            MacroSequenceName = "Untitled";
             WriteToConsole("Cleared all macro commands");
         }
 
@@ -271,7 +361,6 @@ namespace Names.ViewModels
             get => _delayMs;
             set => SetProperty(ref _delayMs, value);
         }
-
         public MacroCommandViewModel(MacroCommand command)
         {
             KeyName = command.KeyName;
