@@ -16,7 +16,7 @@ namespace Names.Models
         public double MousePrecision { get; set; } = 5.0;
 
         // Playback settings
-        public double PlaybackSpeed { get; set; } = 1.0;
+        public string PlaybackSpeed { get; set; } = "1.0";
         public int LoopDelay { get; set; } = 1000;
         public bool RandomizeTiming { get; set; } = true;
         public string PlaybackHotkey { get; set; } = "F9";

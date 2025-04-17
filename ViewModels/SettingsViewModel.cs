@@ -19,7 +19,7 @@ namespace Names.ViewModels
         private Brush _recordingHotkeyBackground = new SolidColorBrush(Color.FromRgb(30, 30, 30));
         private string _mouseRecordingMode;
         private double _mousePrecision;
-        private double _playbackSpeed;
+        private string _playbackSpeed;
         private int _loopDelay;
         private bool _randomizeTiming;
         private string _playbackHotkey;
@@ -79,7 +79,7 @@ namespace Names.ViewModels
             }
         }
 
-        public double PlaybackSpeed
+        public string PlaybackSpeed
         {
             get => _playbackSpeed;
             set
@@ -235,7 +235,7 @@ namespace Names.ViewModels
         public SettingsViewModel()
         {
             _fileService = new FileService();
-            SettingsManager.Instance.ForceReloadSettings();
+            //SettingsManager.Instance.ForceReloadSettings();
 
             // Initialize commands
             BackCommand = new RelayCommand(_ => CloseSettings());
@@ -278,9 +278,6 @@ namespace Names.ViewModels
                 e.Handled = true;
             }
         }
-        #endregion
-
-        #region Private Methods
         private void LoadSettings()
         {
             RecordingHotkey = SettingsManager.Instance.Settings.RecordingHotkey;
