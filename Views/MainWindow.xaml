@@ -570,13 +570,34 @@
                                                            Foreground="White" 
                                                            Margin="10,0,0,0"/>
 
-                                                <!-- Delay time -->
-                                                <TextBlock Grid.Column="2" 
-                                                           Text="{Binding DelayMs, Converter={StaticResource DelayToTimestampConverter}}" 
-                                                           Foreground="#AAAAAA" 
-                                                           FontSize="12" 
-                                                           VerticalAlignment="Center" 
-                                                           Margin="10,0,10,0"/>
+                                                <!-- Delay time (with inline editing) -->
+                                                <Grid Grid.Column="2">
+                                                    <!-- Display mode -->
+                                                    <TextBlock 
+                                                        Text="{Binding DelayMs, Converter={StaticResource DelayToTimestampConverter}}" 
+                                                        Foreground="#AAAAAA" 
+                                                        FontSize="12" 
+                                                        VerticalAlignment="Center" 
+                                                        Margin="10,0,10,0"
+                                                        Cursor="Hand"
+                                                        ToolTip="Double-click to edit delay"
+                                                        Visibility="{Binding IsEditingDelay, Converter={StaticResource BooleanToInverseVisibilityConverter}}"
+                                                        MouseLeftButtonDown="DelayTextBlock_MouseLeftButtonDown"
+                                                        Tag="{Binding}"/>
+
+                                                    <!-- Edit mode -->
+                                                    <TextBox 
+                                                        Text="{Binding DelayMs, UpdateSourceTrigger=PropertyChanged}" 
+                                                        Foreground="#AAAAAA" 
+                                                        Background="#333333"
+                                                        FontSize="12" 
+                                                        VerticalAlignment="Center" 
+                                                        Margin="10,0,10,0"
+                                                        Visibility="{Binding IsEditingDelay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        LostFocus="DelayTextBox_LostFocus"
+                                                        KeyDown="DelayTextBox_KeyDown"
+                                                        Tag="{Binding}"/>
+                                                </Grid>
 
                                                 <!-- Delete button -->
                                                 <Button Grid.Column="3" 

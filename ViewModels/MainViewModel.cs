@@ -307,8 +307,22 @@ namespace Names.ViewModels
             StatusText = "Paused";
             StatusColor = new SolidColorBrush(Colors.Blue);
         }
-        #endregion
         
+        public void UpdateStatusInformation()
+        {
+            int commandCount = MacroCommands.Count;
+            EventsCountText = $"Events: {commandCount}";
+
+            // Calculate total duration
+            int totalDuration = MacroCommands.Sum(cmd => cmd.DelayMs);
+            DurationText = $"Duration: {totalDuration / 1000.0:F3}s";
+
+            LoopsText = $"Loops: {LoopCount}/{LoopCount}";
+        }
+
+
+        #endregion
+
         #region Private Methods
         private void LoadSavedMacrosList()
         {
@@ -628,19 +642,6 @@ namespace Names.ViewModels
                 UpdateStatusInformation();
             });
         }
-
-        private void UpdateStatusInformation()
-        {
-            int commandCount = MacroCommands.Count;
-            EventsCountText = $"Events: {commandCount}";
-
-            // Calculate total duration
-            int totalDuration = MacroCommands.Sum(cmd => cmd.DelayMs);
-            DurationText = $"Duration: {totalDuration / 1000.0:F3}s";
-
-            LoopsText = $"Loops: {LoopCount}/{LoopCount}";
-        }
-
         public void WriteToConsole(string message)
         {
             // Log to the centralized service
@@ -653,6 +654,7 @@ namespace Names.ViewModels
     {
         private string _keyName;
         private int _delayMs;
+        private bool _isEditingDelay;
 
         public string KeyName
         {
@@ -666,10 +668,17 @@ namespace Names.ViewModels
             set => SetProperty(ref _delayMs, value);
         }
 
+        public bool IsEditingDelay
+        {
+            get => _isEditingDelay;
+            set => SetProperty(ref _isEditingDelay, value);
+        }
+
         public MacroCommandViewModel(MacroCommand command)
         {
             KeyName = command.KeyName;
             DelayMs = command.DelayMs;
+            IsEditingDelay = false;
         }
     }
 }
