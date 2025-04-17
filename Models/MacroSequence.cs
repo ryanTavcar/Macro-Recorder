@@ -10,7 +10,7 @@ namespace Names.Models
     public class MacroSequence
     {
         public List<MacroCommand> Commands { get; private set; } = new List<MacroCommand>();
-        public string Name { get; set; }
+        public string Name { get; set; } = "Untitled Macro";
         public string FilePath { get; set; }
         public DateTime LastModified { get; set; }
 

@@ -45,6 +45,44 @@ namespace Names
                 this.DragMove();
         }
 
+        private void DisplayTextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2) // Check for double click
+            {
+                // Switch to edit mode
+                ViewModel.IsEditingMacroName = true;
+
+                // Focus the text box and select all text
+                EditTextBox.Focus();
+                EditTextBox.SelectAll();
+
+                e.Handled = true;
+            }
+        }
+
+        private void EditTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // Exit edit mode when the textbox loses focus
+            ViewModel.IsEditingMacroName = false;
+        }
+
+        private void EditTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // Save the changes and exit edit mode
+                ViewModel.IsEditingMacroName = false;
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                // Revert to the original value and exit edit mode
+                EditTextBox.Text = ViewModel.CurrentMacroSequence.Name;
+                ViewModel.IsEditingMacroName = false;
+                e.Handled = true;
+            }
+        }
+
         // Add this method to MainWindow.xaml.cs
         public void ReturnToMain()
         {

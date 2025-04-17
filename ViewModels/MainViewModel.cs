@@ -24,12 +24,14 @@ namespace Names.ViewModels
         #endregion
 
         #region Private Fields
+        private bool _isEditingMacroName = false;
         private string _consoleText = string.Empty;
         private int _loopCount = 1;
         private string _triggerKey = string.Empty;
         private bool _waitForTrigger = false;
         private bool _randomizeTimingCheckBox;
-        private string _macroSequenceName = "Untitled";
+        private MacroSequence _currentMacroSequence = null;
+        private string _macroSequenceName;
         private bool _isRecording = false;
         private bool _isPlaying = false;
         private bool _isRecordingTriggerKey = false;
@@ -48,6 +50,17 @@ namespace Names.ViewModels
 
         #region Public Properties
         public ObservableCollection<MacroCommandViewModel> MacroCommands { get; } = new ObservableCollection<MacroCommandViewModel>();
+
+        public MacroSequence CurrentMacroSequence
+        {
+            get => _currentMacroSequence;
+            set => SetProperty(ref _currentMacroSequence, value);
+        }
+        public bool IsEditingMacroName
+        {
+            get => _isEditingMacroName;
+            set => SetProperty(ref _isEditingMacroName, value);
+        }
 
         public string ConsoleText
         {
@@ -215,6 +228,10 @@ namespace Names.ViewModels
             MaximizeWindowCommand = new RelayCommand(_ => MaximizeWindow());
             CloseWindowCommand = new RelayCommand(_ => CloseWindow());
 
+            // Initialize the macro sequence and name
+            CurrentMacroSequence = CreateMacroSequence();
+            MacroSequenceName = CurrentMacroSequence.Name;
+
             // Subscribe to recorder service events
             _recorderService.CommandRecorded += OnCommandRecorded;
 
@@ -327,6 +344,7 @@ namespace Names.ViewModels
             try
             {
                 var sequence = CreateMacroSequence();
+                sequence.Name = MacroSequenceName;
                 if (sequence.Commands.Count == 0)
                 {
                     MessageBox.Show("There are no macro commands to save.", "Nothing to Save",
@@ -335,7 +353,7 @@ namespace Names.ViewModels
                 }
 
                 // Save the macro
-                MacroSequence savedSequence = _fileService.SaveMacro(sequence, MacroSequenceName);
+                MacroSequence savedSequence = _fileService.SaveMacro(sequence);
 
                 if (savedSequence != null)
                 {
@@ -347,6 +365,8 @@ namespace Names.ViewModels
 
                     // Add the saved sequence to the sequence macrodata list
                     _fileService.SaveMacroToList(savedSequence);
+
+                    CurrentMacroSequence = savedSequence;
                 }
 
 
@@ -398,6 +418,7 @@ namespace Names.ViewModels
                     if (sequence != null)
                     {
                         MacroSequenceName = sequence.Name;
+                        CurrentMacroSequence = sequence;
                         foreach (var command in sequence.Commands)
                         {
                             var commandModel = new MacroCommandViewModel(command);
@@ -472,7 +493,8 @@ namespace Names.ViewModels
         private void ClearMacro()
         {
             MacroCommands.Clear();
-            MacroSequenceName = "Untitled";
+            CurrentMacroSequence = CreateMacroSequence();
+            MacroSequenceName = CurrentMacroSequence.Name;
             WriteToConsole("Cleared all macro commands");
             UpdateStatusInformation();
         }

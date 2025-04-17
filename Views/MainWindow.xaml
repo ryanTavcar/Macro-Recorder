@@ -34,6 +34,16 @@
             <GradientStop Color="#0F3460" Offset="1.0"/>
         </LinearGradientBrush>
 
+        <!-- Editable TextBox Styles -->
+        <Style x:Key="EditableTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF5252"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTip" Value="Double-click to edit"/>
+        </Style>
+        
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
             <Setter Property="Background" Value="#2D2D30"/>
@@ -409,7 +419,23 @@
 
                         <StackPanel Orientation="Horizontal" Margin="20,0" VerticalAlignment="Center">
                             <TextBlock Text="Current Macro: " FontSize="16" Foreground="White" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding MacroSequenceName}" FontSize="16" FontWeight="SemiBold" Foreground="#FF5252" VerticalAlignment="Center"/>
+                            <!-- Text display mode -->
+                            <TextBlock x:Name="DisplayTextBlock" 
+                                Text="{Binding MacroSequenceName}" 
+                                Style="{StaticResource EditableTextBlockStyle}"
+                                Visibility="{Binding IsEditingMacroName, Converter={StaticResource BooleanToInverseVisibilityConverter}}"
+                                MouseLeftButtonDown="DisplayTextBlock_MouseLeftButtonDown"/>
+
+                            <!-- Text edit mode -->
+                            <TextBox x:Name="EditTextBox" 
+                                 Text="{Binding MacroSequenceName, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="16"
+                                 FontWeight="SemiBold"
+                                 Foreground="#FF5252"
+                                 VerticalAlignment="Center"
+                                 Visibility="{Binding IsEditingMacroName, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 LostFocus="EditTextBox_LostFocus"
+                                 KeyDown="EditTextBox_KeyDown"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0">

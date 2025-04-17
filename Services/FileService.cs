@@ -43,13 +43,14 @@ namespace Names.Services
             return null;
         }
 
-        public MacroSequence SaveMacro(MacroSequence sequence, string? fileName)
+        public MacroSequence SaveMacro(MacroSequence sequence)
         {
+            string sequenceName = sequence.Name;
             SaveFileDialog saveDialog = new SaveFileDialog
             {
                 Filter = "Macro files (*.macro)|*.macro|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                 DefaultExt = "macro",
-                FileName = !string.IsNullOrEmpty(fileName) ? fileName : "my_macro.macro",
+                FileName = !string.IsNullOrEmpty(sequenceName) ? sequenceName : "my_macro.macro",
                 InitialDirectory = string.IsNullOrEmpty(lastFilePath) ?
                                  Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -61,7 +62,7 @@ namespace Names.Services
             {
                 try
                 {
-                    sequence.Name = Path.GetFileNameWithoutExtension(saveDialog.FileName);
+                    sequence.Name = sequenceName;
                     sequence.FilePath = saveDialog.FileName;
                     sequence.SaveToFile(saveDialog.FileName);
                     lastFilePath = saveDialog.FileName;
